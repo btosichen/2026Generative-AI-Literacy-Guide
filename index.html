@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 奇幻島：魔法學院</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --pastel-blue: #D6EAF8;
+            --pastel-yellow: #FEF9E7;
+            --pastel-purple: #F5EEF8;
+            --pastel-pink: #FDEDEC;
+            --pastel-green: #E9F7EF;
+            --primary-text: #2C3E50;
+            --action-color: #8E44AD;
+        }
+
+        body {
+            font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+            background-color: var(--pastel-blue);
+            color: var(--primary-text);
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #fff 2px, transparent 2px);
+            background-size: 40px 40px;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            75% { transform: translateX(5px) rotate(5deg); }
+        }
+        
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+
+        /* UI Elements */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 4px solid white;
+            box-shadow: 0 10px 25px rgba(142, 68, 173, 0.1);
+        }
+
+        .btn-macaron {
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
+            border: none;
+            color: white;
+            font-weight: 800;
+            border-radius: 50px;
+            padding: 12px 28px;
+            box-shadow: 0 6px 0 #FF758C, 0 10px 15px rgba(255, 117, 140, 0.3);
+            transition: all 0.1s ease;
+            cursor: pointer;
+        }
+        .btn-macaron:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #FF758C, 0 4px 6px rgba(255, 117, 140, 0.3);
+        }
+        .btn-macaron.blue {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            box-shadow: 0 6px 0 #89b4fa, 0 10px 15px rgba(137, 180, 250, 0.3);
+        }
+        .btn-macaron.blue:active { box-shadow: 0 0 0 #89b4fa; transform: translateY(6px); }
+        
+        .btn-macaron.yellow {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            box-shadow: 0 6px 0 #f5b041, 0 10px 15px rgba(245, 176, 65, 0.3);
+        }
+        .btn-macaron.yellow:active { box-shadow: 0 0 0 #f5b041; transform: translateY(6px); }
+
+        /* AI Companion */
+        #ai-companion {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            transition: all 0.3s ease;
+        }
+        #chat-bubble {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 20px 20px 0 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            max-width: 250px;
+            font-weight: 700;
+            color: #8E44AD;
+            border: 3px solid #F5EEF8;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #chat-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .robot-body {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 4px solid var(--pastel-blue);
+            cursor: pointer;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #a1c4fd, #fdcbf1);
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Drag and Drop/Click Select Styles */
+        .item-chip {
+            background: white;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            padding: 10px 15px;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .item-chip:hover { transform: scale(1.05); border-color: #a1c4fd; }
+        .item-chip.selected { background: #fff59d; border-color: #fbc02d; transform: scale(1.1); box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
+        
+        .drop-zone {
+            min-height: 120px;
+            border: 4px dashed #BDBDBD;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.5);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .drop-zone.active { border-color: #8E44AD; background: var(--pastel-purple); }
+
+        /* Badge Styles */
+        .badge {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #eee;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px;
+            filter: grayscale(100%);
+            transition: all 0.5s;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .badge.unlocked {
+            filter: grayscale(0%);
+            background: linear-gradient(135deg, #f6d365, #fda085);
+            box-shadow: 0 5px 15px rgba(245, 176, 65, 0.4);
+            transform: scale(1.1) rotate(10deg);
+        }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative pb-24">
+
+    <!-- Top Navigation & Progress -->
+    <header class="w-full max-w-4xl mx-auto p-4 flex flex-col gap-2 z-10 hidden" id="main-nav">
+        <div class="flex justify-between items-center glass-card px-6 py-3">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl shadow-inner border-2 border-purple-300">
+                    <i class="fa-solid fa-user-astronaut text-purple-500"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg text-purple-800" id="display-name">玩家</h2>
+                    <p class="text-xs text-gray-500 font-bold">積分: <span id="display-score" class="text-pink-500 text-lg">0</span></p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <div class="badge" id="badge-1" title="生活探索者">🔍</div>
+                <div class="badge" id="badge-2" title="超能解鎖大師">⚡</div>
+                <div class="badge" id="badge-3" title="咒語詠唱者">🧙‍♂️</div>
+                <div class="badge" id="badge-4" title="AI大法官">⚖️</div>
+                <div class="badge" id="badge-5" title="人生航海家">🧭</div>
+            </div>
+        </div>
+        <div class="progress-container shadow-sm">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto" id="app-container">
+        <!-- Content injected here via JS -->
+    </main>
+
+    <!-- AI Companion -->
+    <div id="ai-companion" class="hidden">
+        <div id="chat-bubble">我來幫你囉！</div>
+        <div class="robot-body animate-float" onclick="companionPoke()">
+            🤖
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- 1. Audio Engine (Web Audio API) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- 2. State Management ---
+        const state = {
+            playerName: '',
+            score: 0,
+            currentModule: 0, // 0 = Login, 1-5 = Modules, 6 = End
+            badges: [false, false, false, false, false],
+            selectedItem: null // For tap-to-place mechanics
+        };
+
+        // --- 3. Companion Logic ---
+        function speak(text, duration = 4000) {
+            const bubble = document.getElementById('chat-bubble');
+            bubble.innerText = text;
+            bubble.classList.add('show');
+            playSound('pop');
+            setTimeout(() => { bubble.classList.remove('show'); }, duration);
+        }
+        
+        function companionPoke() {
+            const msgs = ["加油！你是最棒的！", "遇到困難了嗎？多試幾次！", "AI 是好幫手，但你才是主人喔！", "哇！你學得好快！"];
+            speak(msgs[Math.floor(Math.random() * msgs.length)]);
+            document.querySelector('.robot-body').classList.add('animate-shake');
+            setTimeout(() => document.querySelector('.robot-body').classList.remove('animate-shake'), 400);
+        }
+
+        // --- 4. Render Functions ---
+        const appContainer = document.getElementById('app-container');
+
+        function updateUI() {
+            // Update Top Navigation
+            if (state.currentModule > 0 && state.currentModule < 6) {
+                document.getElementById('main-nav').classList.remove('hidden');
+                document.getElementById('ai-companion').classList.remove('hidden');
+                document.getElementById('display-name').innerText = state.playerName;
+                document.getElementById('display-score').innerText = state.score;
+                document.getElementById('progress-bar').style.width = `${(state.currentModule - 1) * 20}%`;
+                
+                state.badges.forEach((unlocked, idx) => {
+                    if (unlocked) document.getElementById(`badge-${idx+1}`).classList.add('unlocked');
+                });
+            } else {
+                document.getElementById('main-nav').classList.add('hidden');
+            }
+
+            // Create new screen container
+            appContainer.innerHTML = '';
+            const screen = document.createElement('div');
+            screen.className = 'w-full animate-pop';
+            
+            // Generate HTML Content
+            let htmlContent = '';
+            switch(state.currentModule) {
+                case 0: htmlContent = renderLogin(); break;
+                case 1: htmlContent = renderModule1(); break;
+                case 2: htmlContent = renderModule2(); break;
+                case 3: htmlContent = renderModule3(); break;
+                case 4: htmlContent = renderModule4(); break;
+                case 5: htmlContent = renderModule5(); break;
+                case 6: htmlContent = renderEnd(); break;
+            }
+            screen.innerHTML = htmlContent;
+            
+            // **CRUCIAL FIX**: Append to DOM first before running any init functions
+            appContainer.appendChild(screen);
+
+            // Run Initialization logic (event listeners, finding elements by ID)
+            switch(state.currentModule) {
+                case 0: initLogin(); break;
+                case 1: initModule1(); break;
+                case 2: /* No extra init needed */ break;
+                case 3: initModule3(); break;
+                case 4: /* No extra init needed */ break;
+                case 5: initModule5(); break;
+                case 6: initEnd(); break;
+            }
+        }
+
+        // --- UI Feedback Modal (Custom Alert) ---
+        function showFeedback(isCorrect, message, nextAction) {
+            if (isCorrect) playSound('success'); else playSound('error');
+            
+            const modal = document.createElement('div');
+            modal.className = `fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 animate-pop`;
+            modal.innerHTML = `
+                <div class="glass-card p-8 text-center max-w-sm mx-4 border-t-8 ${isCorrect ? 'border-t-green-400' : 'border-t-red-400'}">
+                    <div class="text-6xl mb-4">${isCorrect ? '🎉' : '🤔'}</div>
+                    <h2 class="text-2xl font-bold mb-2 ${isCorrect ? 'text-green-600' : 'text-red-500'}">
+                        ${isCorrect ? '太棒了！' : '再想想看喔！'}
+                    </h2>
+                    <p class="text-gray-700 mb-6 font-bold">${message}</p>
+                    <button class="btn-macaron ${isCorrect ? 'blue' : 'yellow'} w-full" id="feedback-btn">
+                        ${isCorrect ? '繼續挑戰 🚀' : '重新試試 ↺'}
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('feedback-btn').onclick = () => {
+                modal.remove();
+                if (isCorrect) {
+                    if (nextAction) nextAction();
+                }
+            };
+        }
+
+        // ==========================================
+        // MODULE 0: Login
+        // ==========================================
+        function renderLogin() {
+            return `
+                <div class="glass-card p-10 text-center max-w-md mx-auto relative overflow-hidden">
+                    <div class="absolute -top-10 -left-10 text-8xl opacity-20">🤖</div>
+                    <div class="absolute -bottom-10 -right-10 text-8xl opacity-20">✨</div>
+                    <h1 class="text-4xl font-black text-purple-600 mb-2 tracking-wider">AI 奇幻島</h1>
+                    <h2 class="text-xl font-bold text-gray-600 mb-8">國中生的 AI 魔法學院</h2>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-inner mb-6">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=E0F7FA" alt="Robot" class="w-32 h-32 mx-auto mb-4 bg-blue-100 rounded-full border-4 border-white shadow-md animate-float">
+                        <input type="text" id="player-name" placeholder="請輸入你的魔法代號 (姓名)" class="w-full p-4 rounded-xl border-2 border-purple-200 focus:border-purple-500 focus:outline-none text-center font-bold text-lg mb-4">
+                    </div>
+                    
+                    <button id="start-btn" class="btn-macaron text-xl w-full py-4 shadow-xl">開始奇幻旅程 🚀</button>
+                </div>
+            `;
+        }
+
+        function initLogin() {
+            // Restore name from local storage
+            const savedName = localStorage.getItem('aiAcademyName');
+            if (savedName) {
+                document.getElementById('player-name').value = savedName;
+            }
+
+            document.getElementById('start-btn').onclick = () => {
+                initAudio(); // Initialize audio context on first user interaction
+                const name = document.getElementById('player-name').value.trim();
+                if (!name) { speak("請告訴我你的名字喔！"); return; }
+                state.playerName = name;
+                localStorage.setItem('aiAcademyName', name);
+                state.currentModule = 1;
+                updateUI();
+                speak(`歡迎來到魔法學院，${name}！我們開始吧！`);
+            };
+        }
+
+        // ==========================================
+        // MODULE 1: AI in Life (Tap to Classify)
+        // ==========================================
+        function renderModule1() {
+            speak("四周有很多物品，哪些藏有 AI 魔法呢？點擊物品，再點擊箱子分類！");
+            return `
+                <div class="glass-card p-6 w-full h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-3xl bg-blue-100 p-3 rounded-xl">🏝️</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-blue-800">第一關：生活探索者</h2>
+                            <p class="text-gray-600 font-bold">點擊下方的物品，然後把它放入正確的分類箱！</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-xl mb-6 min-h-[100px] flex flex-wrap gap-2 justify-center" id="m1-items">
+                        <!-- Items injected here -->
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 flex-grow">
+                        <div class="bg-green-50 rounded-2xl p-4 border-4 border-green-200 flex flex-col">
+                            <h3 class="text-center font-black text-green-700 text-xl mb-2">🤖 包含 AI 魔法</h3>
+                            <div class="drop-zone flex-grow" id="zone-ai" onclick="placeItem('ai')"></div>
+                        </div>
+                        <div class="bg-gray-50 rounded-2xl p-4 border-4 border-gray-200 flex flex-col">
+                            <h3 class="text-center font-black text-gray-600 text-xl mb-2">📦 一般物品 (無AI)</h3>
+                            <div class="drop-zone flex-grow" id="zone-none" onclick="placeItem('none')"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-macaron mt-6 self-center hidden" id="m1-next" onclick="completeModule(1)">前往下一關 👉</button>
+                </div>
+            `;
+        }
+
+        const m1Data = [
+            { id: 'i1', name: '掃地機器人', type: 'ai', icon: '🧹' },
+            { id: 'i2', name: 'YouTube 推薦影片', type: 'ai', icon: '📱' },
+            { id: 'i3', name: '傳統腳踏車', type: 'none', icon: '🚲' },
+            { id: 'i4', name: '木頭鉛筆', type: 'none', icon: '✏️' },
+            { id: 'i5', name: '手機臉部解鎖', type: 'ai', icon: '😁' }
+        ];
+        let m1Correct = 0;
+
+        function initModule1() {
+            const container = document.getElementById('m1-items');
+            m1Correct = 0;
+            state.selectedItem = null;
+            m1Data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-chip';
+                div.id = item.id;
+                div.innerHTML = `<span class="text-2xl">${item.icon}</span> <span class="ml-1">${item.name}</span>`;
+                div.onclick = () => selectItem(item.id);
+                container.appendChild(div);
+            });
+        }
+
+        function selectItem(id) {
+            playSound('pop');
+            document.querySelectorAll('.item-chip').forEach(el => el.classList.remove('selected'));
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('selected');
+                state.selectedItem = id;
+                document.querySelectorAll('.drop-zone').forEach(z => z.classList.add('active'));
+            }
+        }
+
+        function placeItem(targetZone) {
+            if (!state.selectedItem) {
+                speak("請先點選上方的一個物品喔！");
+                return;
+            }
+            
+            const itemObj = m1Data.find(i => i.id === state.selectedItem);
+            if (itemObj.type === targetZone) {
+                // Correct
+                const el = document.getElementById(state.selectedItem);
+                el.classList.remove('selected');
+                el.onclick = null; // disable
+                el.style.cursor = 'default';
+                document.getElementById(`zone-${targetZone}`).appendChild(el);
+                
+                playSound('success');
+                m1Correct++;
+                speak(`答對了！${itemObj.name} ${targetZone==='ai'?'有用到AI技術喔！':'是一般物品。'}`, 3000);
+                
+                state.selectedItem = null;
+                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+
+                if (m1Correct === m1Data.length) {
+                    state.score += 20;
+                    document.getElementById('m1-next').classList.remove('hidden');
+                    speak("太厲害了！全部都分類正確！", 5000);
+                }
+            } else {
+                // Wrong
+                showFeedback(false, `${itemObj.name} 放錯箱子囉！再想一下。`);
+                const el = document.getElementById(state.selectedItem);
+                el.classList.remove('selected');
+                state.selectedItem = null;
+                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+            }
+        }
+
+        // ==========================================
+        // MODULE 2: AI Capabilities (Scenario Quiz)
+        // ==========================================
+        const m2Questions = [
+            { q: "你要做歷史報告，遇到瓶頸不知道怎麼下筆，AI 可以幫你做什麼？", opts: ["A. 直接幫我寫完所有內容，我直接交出去。", "B. 幫我發想報告的大綱與結構，讓我比較有靈感。", "C. AI 不能幫忙寫作業。"], ans: 1, exp: "AI 是很好的「靈感發想機」，幫你規劃大綱，但內容還是要自己吸收轉化喔！" },
+            { q: "AI 在「藝術創作」上最擅長什麼？", opts: ["A. 根據你給的文字（提示詞）生成對應的圖片。", "B. 取代所有人類畫家。", "C. 自己憑空產生想法，不需要人類下指令。"], ans: 0, exp: "生成式 AI（如 Midjourney）能根據你的文字描述生成圖片，人類的創意指令才是關鍵！" }
+        ];
+        let m2CurrentQ = 0;
+
+        function renderModule2() {
+            speak("第二關：解鎖 AI 的超能力！回答情境問題。");
+            m2CurrentQ = 0;
+            return `
+                <div class="glass-card p-8 w-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="text-3xl bg-yellow-100 p-3 rounded-xl">⚡</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-yellow-700">第二關：能力解鎖</h2>
+                            <p class="text-gray-600 font-bold">遇到這些情況，AI 可以怎麼幫忙？</p>
+                        </div>
+                    </div>
+                    <div id="m2-content" class="bg-white p-6 rounded-2xl border-4 border-yellow-100 shadow-sm">
+                        ${getM2QuestionHTML()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getM2QuestionHTML() {
+            if (m2CurrentQ >= m2Questions.length) {
+                return `
+                    <div class="text-center py-8">
+                        <div class="text-6xl mb-4">🏆</div>
+                        <h3 class="text-2xl font-bold text-purple-600 mb-4">超能力完全解鎖！</h3>
+                        <p class="text-gray-600 font-bold mb-6">你已經了解 AI 是輔助我們學習與創作的好幫手了！</p>
+                        <button class="btn-macaron yellow" onclick="completeModule(2)">前往下一關 👉</button>
+                    </div>
+                `;
+            }
+            const q = m2Questions[m2CurrentQ];
+            let optsHTML = q.opts.map((opt, idx) => `
+                <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 font-bold text-gray-700 transition-all mb-3 shadow-sm"
+                        onclick="checkM2Answer(${idx})">
+                    ${opt}
+                </button>
+            `).join('');
+
+            return `
+                <h3 class="text-xl font-bold text-gray-800 mb-6 leading-relaxed">
+                    <span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-lg mr-2">情境 ${m2CurrentQ + 1}</span>
+                    ${q.q}
+                </h3>
+                <div class="flex flex-col">${optsHTML}</div>
+            `;
+        }
+
+        function checkM2Answer(idx) {
+            const q = m2Questions[m2CurrentQ];
+            if (idx === q.ans) {
+                state.score += 15;
+                showFeedback(true, q.exp, () => {
+                    m2CurrentQ++;
+                    document.getElementById('m2-content').innerHTML = getM2QuestionHTML();
+                });
+            } else {
+                showFeedback(false, "再仔細想想！AI 是輔助工具，不是替代品喔。");
+            }
+        }
+
+        // ==========================================
+        // MODULE 3: Generative AI Lab (The Core Feature)
+        // ==========================================
+        function renderModule3() {
+            speak("歡迎來到最酷的實驗室！跟我一起學習怎麼寫出神級的 Prompt (提示詞) 吧！");
+            return `
+                <div class="glass-card p-6 w-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-3xl bg-pink-100 p-3 rounded-xl">🧪</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-pink-700">第三關：創作實驗室 (Prompt 魔法)</h2>
+                            <p class="text-gray-600 font-bold text-sm">好指令＝「目標主角」＋「環境條件」＋「風格氛圍」</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Left: Builder -->
+                        <div class="bg-gray-50 p-4 rounded-2xl border-4 border-gray-200">
+                            <h3 class="font-black text-gray-700 mb-3 border-b-2 pb-2">1. 選擇詞彙卡片 (點擊)</h3>
+                            <div class="flex flex-wrap gap-2 mb-6" id="m3-words">
+                                <div class="item-chip bg-white border-pink-300 text-pink-700" onclick="selectM3Word(this, 'word')">一隻可愛的柴犬</div>
+                                <div class="item-chip bg-white border-pink-300 text-pink-700" onclick="selectM3Word(this, 'word')">一台未來的跑車</div>
+                                <div class="item-chip bg-white border-blue-300 text-blue-700" onclick="selectM3Word(this, 'word')">在太空漫步</div>
+                                <div class="item-chip bg-white border-blue-300 text-blue-700" onclick="selectM3Word(this, 'word')">在充滿螢火蟲的森林</div>
+                                <div class="item-chip bg-white border-purple-300 text-purple-700" onclick="selectM3Word(this, 'word')">吉卜力動漫風</div>
+                                <div class="item-chip bg-white border-purple-300 text-purple-700" onclick="selectM3Word(this, 'word')">3D 寫實風格</div>
+                            </div>
+
+                            <h3 class="font-black text-gray-700 mb-3 border-b-2 pb-2">2. 放入咒語插槽 (點擊框框)</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-16 font-bold text-pink-600 text-right">🎯 目標</span>
+                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-target" onclick="placeM3Word('slot-target')"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-16 font-bold text-blue-600 text-right">🌍 條件</span>
+                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-condition" onclick="placeM3Word('slot-condition')"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-16 font-bold text-purple-600 text-right">🎨 風格</span>
+                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-style" onclick="placeM3Word('slot-style')"></div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn-macaron w-full mt-6 shadow-md" onclick="generateImage()">🪄 施展魔法 (生成)</button>
+                        </div>
+
+                        <!-- Right: Result -->
+                        <div class="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden border-4 border-purple-300 shadow-inner">
+                            <h3 class="absolute top-4 left-4 text-white font-bold opacity-70">AI 畫布預覽</h3>
+                            
+                            <div id="ai-canvas" class="w-48 h-48 bg-black bg-opacity-30 rounded-2xl border-2 border-dashed border-white border-opacity-30 flex flex-col items-center justify-center text-white transition-all duration-500">
+                                <span class="text-4xl mb-2 opacity-50">🖼️</span>
+                                <span class="text-sm opacity-50 font-bold">等待提示詞...</span>
+                            </div>
+                            
+                            <p id="canvas-desc" class="text-white text-center mt-4 font-bold text-sm h-10 opacity-80"></p>
+                            
+                            <button id="m3-next" class="btn-macaron mt-4 hidden z-10" onclick="completeModule(3)">完美！下一關 👉</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let m3SelectedEl = null;
+        function initModule3() { 
+            m3SelectedEl = null; 
+        }
+
+        function selectM3Word(el) {
+            playSound('pop');
+            document.querySelectorAll('#m3-words .item-chip').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            m3SelectedEl = el;
+            document.querySelectorAll('#slot-target, #slot-condition, #slot-style').forEach(z => z.classList.add('active'));
+        }
+
+        function placeM3Word(slotId) {
+            if (!m3SelectedEl) return;
+            const slot = document.getElementById(slotId);
+            // Clear slot first
+            if (slot.children.length > 0) {
+                const oldItem = slot.children[0];
+                document.getElementById('m3-words').appendChild(oldItem);
+            }
+            
+            m3SelectedEl.classList.remove('selected');
+            slot.appendChild(m3SelectedEl);
+            playSound('pop');
+            m3SelectedEl = null;
+            document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+        }
+
+        function generateImage() {
+            const t = document.getElementById('slot-target').innerText.trim();
+            const c = document.getElementById('slot-condition').innerText.trim();
+            const s = document.getElementById('slot-style').innerText.trim();
+
+            if (!t || !c || !s) {
+                showFeedback(false, "魔法陣還沒填滿喔！請確保「目標」、「條件」、「風格」都有放入詞彙。");
+                return;
+            }
+
+            const canvas = document.getElementById('ai-canvas');
+            const desc = document.getElementById('canvas-desc');
+            
+            // Animation
+            canvas.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-4xl text-pink-300"></i><p class="mt-2 text-sm text-pink-200">AI 繪製中...</p>`;
+            playSound('pop');
+            speak("正在把你的想像變成畫面...", 2000);
+
+            setTimeout(() => {
+                playSound('success');
+                // Simple logic to show different emojis based on combination
+                let emoji = "✨";
+                if (t.includes("柴犬")) emoji = "🐕";
+                if (t.includes("跑車")) emoji = "🏎️";
+                
+                let bgClass = "from-pink-400 to-purple-500";
+                if (c.includes("太空")) bgClass = "from-gray-900 to-blue-900";
+                if (c.includes("森林")) bgClass = "from-green-600 to-emerald-900";
+
+                canvas.className = `w-48 h-48 rounded-2xl shadow-2xl flex items-center justify-center text-6xl transform scale-110 transition-all duration-500 bg-gradient-to-br ${bgClass} border-4 border-white animate-pop`;
+                canvas.innerHTML = emoji;
+                
+                desc.innerText = `「${t}，${c}，${s}」`;
+                
+                state.score += 30;
+                speak("太神啦！這就是精準 Prompt 的威力！");
+                document.getElementById('m3-next').classList.remove('hidden');
+            }, 1500);
+        }
+
+        // ==========================================
+        // MODULE 4: AI Safety Court
+        // ==========================================
+        const m4Cases = [
+            { q: "為了註冊免費的 AI 網站，小明輸入了自己的身分證字號與家裡住址。這樣做安全嗎？", ans: false, exp: "絕對不行！❌ 不要將重要的個人隱私資料輸入給 AI，因為資料可能會被用來訓練模型或外洩。" },
+            { q: "小華用 AI 幫忙整理英文文章的單字，然後自己背起來。這樣算作弊嗎？", ans: true, exp: "很棒的用法！✅ 把 AI 當作專屬家教幫忙整理資料，最後知識還是進到自己腦袋裡。" },
+            { q: "小美直接複製 AI 寫的作文當作自己的暑假作業交給老師，並且沒有標註使用 AI。這樣可以嗎？", ans: false, exp: "不可以喔！❌ 這是學術不誠實。應該自己構思，AI 只能輔助修改錯字或提供靈感，而且若有使用應該誠實標註。" }
+        ];
+        let m4Current = 0;
+
+        function renderModule4() {
+            speak("來到 AI 法庭！請擔任大法官，判斷這些行為是對還是錯？");
+            m4Current = 0;
+            return `
+                <div class="glass-card p-8 w-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="text-3xl bg-red-100 p-3 rounded-xl">⚖️</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-red-800">第四關：AI 魔法法庭</h2>
+                            <p class="text-gray-600 font-bold">面對網路情境，保護自己最重要！</p>
+                        </div>
+                    </div>
+                    <div id="m4-content" class="text-center">
+                        ${getM4HTML()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getM4HTML() {
+            if (m4Current >= m4Cases.length) {
+                return `
+                    <div class="py-8 animate-pop">
+                        <div class="text-6xl mb-4">🎖️</div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">法官大人，審理完畢！</h3>
+                        <p class="text-gray-700 font-bold mb-6">你已經具備安全使用 AI 的觀念，記得保護個資、誠實使用喔！</p>
+                        <button class="btn-macaron blue" onclick="completeModule(4)">前往最終關卡 👉</button>
+                    </div>
+                `;
+            }
+            const c = m4Cases[m4Current];
+            return `
+                <div class="bg-gray-50 border-4 border-gray-200 rounded-2xl p-8 mb-8 relative animate-pop">
+                    <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-500 text-white font-black px-4 py-1 rounded-full shadow-md">
+                        案卷 ${m4Current + 1}
+                    </div>
+                    <p class="text-xl font-bold text-gray-800 mt-4 leading-relaxed">${c.q}</p>
+                </div>
+                <div class="flex justify-center gap-6">
+                    <button class="btn-macaron bg-gradient-to-r from-green-400 to-green-500 shadow-green-200 text-2xl px-8 py-4 flex flex-col items-center gap-2 hover:scale-105" onclick="checkM4(true)">
+                        <span>⭕</span><span class="text-sm">這樣OK</span>
+                    </button>
+                    <button class="btn-macaron bg-gradient-to-r from-red-400 to-red-500 shadow-red-200 text-2xl px-8 py-4 flex flex-col items-center gap-2 hover:scale-105" onclick="checkM4(false)">
+                        <span>❌</span><span class="text-sm">這不行</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function checkM4(userAns) {
+            const c = m4Cases[m4Current];
+            if (userAns === c.ans) {
+                state.score += 15;
+                showFeedback(true, c.exp, () => {
+                    m4Current++;
+                    document.getElementById('m4-content').innerHTML = getM4HTML();
+                });
+            } else {
+                showFeedback(false, c.exp);
+            }
+        }
+
+        // ==========================================
+        // MODULE 5: Life Choices (Categorization)
+        // ==========================================
+        function renderModule5() {
+            speak("最後一關：未來的主人翁！有些事能交給 AI，有些事一定要自己來！");
+            return `
+                <div class="glass-card p-6 w-full h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-3xl bg-indigo-100 p-3 rounded-xl">⛰️</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-indigo-800">最終關：決策山巔</h2>
+                            <p class="text-gray-600 font-bold text-sm">把任務分派給「AI 助理」或「自己」</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-4 rounded-xl mb-4 flex flex-wrap gap-2 justify-center min-h-[80px]" id="m5-items">
+                        <!-- Items here -->
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 flex-grow">
+                        <div class="bg-blue-50 rounded-2xl p-4 border-4 border-blue-200 flex flex-col">
+                            <h3 class="text-center font-black text-blue-700 mb-2">🤖 AI 幫忙做 (省時/整理)</h3>
+                            <div class="drop-zone flex-grow" id="zone-ai-do" onclick="placeM5Item('ai-do')"></div>
+                        </div>
+                        <div class="bg-orange-50 rounded-2xl p-4 border-4 border-orange-200 flex flex-col">
+                            <h3 class="text-center font-black text-orange-700 mb-2">🙋‍♂️ 我自己做 (情感/決策)</h3>
+                            <div class="drop-zone flex-grow" id="zone-me-do" onclick="placeM5Item('me-do')"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-macaron mt-6 self-center hidden" id="m5-next" onclick="completeModule(5)">領取結業證書 🎓</button>
+                </div>
+            `;
+        }
+
+        const m5Data = [
+            { id: 't1', name: '檢查英文拼字錯誤', type: 'ai-do' },
+            { id: 't2', name: '寫日記抒發難過的心情', type: 'me-do' },
+            { id: 't3', name: '決定未來要讀什麼科系', type: 'me-do' },
+            { id: 't4', name: '把萬字長文整理成 3 個重點', type: 'ai-do' },
+            { id: 't5', name: '和好朋友吵架後的道歉', type: 'me-do' }
+        ];
+        let m5Correct = 0;
+        let m5Selected = null;
+
+        function initModule5() {
+            const container = document.getElementById('m5-items');
+            m5Correct = 0;
+            m5Selected = null;
+            m5Data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-chip bg-white';
+                div.id = item.id;
+                div.innerText = item.name;
+                div.onclick = () => {
+                    playSound('pop');
+                    document.querySelectorAll('#m5-items .item-chip').forEach(e => e.classList.remove('selected'));
+                    div.classList.add('selected');
+                    m5Selected = item.id;
+                    document.querySelectorAll('.drop-zone').forEach(z => z.classList.add('active'));
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function placeM5Item(targetZone) {
+            if (!m5Selected) return;
+            const itemObj = m5Data.find(i => i.id === m5Selected);
+            
+            if (itemObj.type === targetZone) {
+                const el = document.getElementById(m5Selected);
+                el.classList.remove('selected');
+                el.onclick = null;
+                el.style.cursor = 'default';
+                document.getElementById(`zone-${targetZone}`).appendChild(el);
+                
+                playSound('success');
+                m5Correct++;
+                
+                let msg = targetZone === 'ai-do' ? 
+                    "對！這種繁瑣的處理工作交給 AI 最適合！" : 
+                    "沒錯！牽涉到個人情感與重大決定的事，還是要自己來喔！";
+                speak(msg, 3000);
+
+                m5Selected = null;
+                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+
+                if (m5Correct === m5Data.length) {
+                    state.score += 20;
+                    document.getElementById('m5-next').classList.remove('hidden');
+                    speak("你完全掌握了與 AI 共存的智慧！", 4000);
+                }
+            } else {
+                showFeedback(false, "再想一下喔！這件事交給誰處理比較好？");
+                document.getElementById(m5Selected).classList.remove('selected');
+                m5Selected = null;
+                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+            }
+        }
+
+        // ==========================================
+        // MODULE 6: End Screen (Certificate)
+        // ==========================================
+        function renderEnd() {
+            return `
+                <div class="glass-card p-10 text-center max-w-lg mx-auto animate-pop relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400"></div>
+                    <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-2 mt-4">
+                        結業證書
+                    </h1>
+                    <h2 class="text-xl font-bold text-gray-600 mb-8">AI 奇幻島 魔法學院</h2>
+                    
+                    <div class="bg-yellow-50 rounded-2xl p-6 border-4 border-yellow-200 mb-8 relative">
+                        <div class="text-6xl mb-4 animate-float">🎓</div>
+                        <p class="text-lg font-bold text-gray-700 mb-2">茲證明</p>
+                        <h3 class="text-3xl font-black text-blue-700 mb-4 border-b-2 border-blue-200 pb-2 inline-block px-8">${state.playerName}</h3>
+                        <p class="text-gray-700 font-bold mb-4">
+                            已成功通過五大試煉，掌握 AI 生活應用、精準提示詞魔法，並具備優良的 AI 數位素養！
+                        </p>
+                        <div class="text-2xl text-pink-500 font-black">
+                            最終積分: ${state.score} 
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center gap-3 mb-8">
+                        <div class="badge unlocked" title="生活探索者">🔍</div>
+                        <div class="badge unlocked" title="超能解鎖大師">⚡</div>
+                        <div class="badge unlocked" title="咒語詠唱者">🧙‍♂️</div>
+                        <div class="badge unlocked" title="AI大法官">⚖️</div>
+                        <div class="badge unlocked" title="人生航海家">🧭</div>
+                    </div>
+                    
+                    <button class="btn-macaron text-lg px-8" onclick="location.reload()">再玩一次 ↺</button>
+                </div>
+            `;
+        }
+
+        function initEnd() {
+            playSound('success');
+            setTimeout(() => playSound('success'), 200);
+            document.getElementById('ai-companion').classList.add('hidden');
+            document.getElementById('main-nav').classList.add('hidden');
+            fireConfetti();
+        }
+
+        // --- Utility: Confetti ---
+        function fireConfetti() {
+            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d'];
+            for(let i=0; i<100; i++) {
+                const conf = document.createElement('div');
+                conf.style.position = 'fixed';
+                conf.style.width = '10px';
+                conf.style.height = '10px';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.top = '-10px';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.opacity = Math.random() + 0.5;
+                conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+                conf.style.zIndex = '100';
+                document.body.appendChild(conf);
+
+                const animationDuration = Math.random() * 3 + 2;
+                conf.animate([
+                    { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translate3d(${Math.random()*200 - 100}px, 100vh, 0) rotate(${Math.random()*720}deg)`, opacity: 0 }
+                ], {
+                    duration: animationDuration * 1000,
+                    easing: 'cubic-bezier(.37,0,.63,1)',
+                    fill: 'forwards'
+                });
+                setTimeout(() => conf.remove(), animationDuration * 1000);
+            }
+        }
+
+        // --- Navigation Controller ---
+        function completeModule(moduleId) {
+            state.badges[moduleId - 1] = true;
+            state.currentModule = moduleId + 1;
+            updateUI();
+        }
+
+        // --- Init ---
+        window.onload = () => {
+            updateUI(); // Render initial login screen first
+        };
+
+    </script>
+</body>
+</html>
