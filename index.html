@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 奇幻島：魔法學院</title>
+    <title>AI 奇幻島：魔法學院 (素養進階版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,28 +29,19 @@
         }
 
         /* Animations */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-        @keyframes pop {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px) rotate(-5deg); }
-            75% { transform: translateX(5px) rotate(5deg); }
-        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+        @keyframes pop { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideIn { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); } 75% { transform: translateX(5px) rotate(5deg); } }
         
         .animate-float { animation: float 3s ease-in-out infinite; }
         .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-slide-in { animation: slideIn 0.5s ease-out forwards; }
         .animate-shake { animation: shake 0.4s ease-in-out; }
 
         /* UI Elements */
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             border-radius: 24px;
             border: 4px solid white;
@@ -67,140 +58,102 @@
             box-shadow: 0 6px 0 #FF758C, 0 10px 15px rgba(255, 117, 140, 0.3);
             transition: all 0.1s ease;
             cursor: pointer;
+            display: inline-flex; justify-content: center; align-items: center; gap: 8px;
         }
-        .btn-macaron:active {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #FF758C, 0 4px 6px rgba(255, 117, 140, 0.3);
-        }
-        .btn-macaron.blue {
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            box-shadow: 0 6px 0 #89b4fa, 0 10px 15px rgba(137, 180, 250, 0.3);
-        }
+        .btn-macaron:active { transform: translateY(6px); box-shadow: 0 0 0 #FF758C, 0 4px 6px rgba(255, 117, 140, 0.3); }
+        .btn-macaron.blue { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); box-shadow: 0 6px 0 #89b4fa, 0 10px 15px rgba(137, 180, 250, 0.3); }
         .btn-macaron.blue:active { box-shadow: 0 0 0 #89b4fa; transform: translateY(6px); }
-        
-        .btn-macaron.yellow {
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            box-shadow: 0 6px 0 #f5b041, 0 10px 15px rgba(245, 176, 65, 0.3);
-        }
+        .btn-macaron.yellow { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); box-shadow: 0 6px 0 #f5b041, 0 10px 15px rgba(245, 176, 65, 0.3); }
         .btn-macaron.yellow:active { box-shadow: 0 0 0 #f5b041; transform: translateY(6px); }
+        .btn-macaron.green { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); box-shadow: 0 6px 0 #2ecc71, 0 10px 15px rgba(46, 204, 113, 0.3); }
+        .btn-macaron.green:active { box-shadow: 0 0 0 #2ecc71; transform: translateY(6px); }
+        .btn-macaron:disabled { filter: grayscale(1); cursor: not-allowed; transform: translateY(6px); box-shadow: none; }
+
+        /* Custom Input/Textarea */
+        .effort-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: 3px solid #E0E0E0;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #4A235A;
+            transition: all 0.3s;
+            background: #FAFAFA;
+            resize: vertical;
+        }
+        .effort-input:focus { border-color: #8E44AD; background: white; outline: none; box-shadow: 0 0 0 4px rgba(142, 68, 173, 0.1); }
 
         /* AI Companion */
         #ai-companion {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            transition: all 0.3s ease;
+            position: fixed; bottom: 20px; right: 20px; z-index: 50;
+            display: flex; flex-direction: column; align-items: flex-end; transition: all 0.3s ease;
         }
         #chat-bubble {
-            background: white;
-            padding: 12px 20px;
-            border-radius: 20px 20px 0 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-            max-width: 250px;
-            font-weight: 700;
-            color: #8E44AD;
-            border: 3px solid #F5EEF8;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-            pointer-events: none;
+            background: white; padding: 12px 20px; border-radius: 20px 20px 0 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 10px;
+            max-width: 280px; font-weight: 700; color: #8E44AD;
+            border: 3px solid #F5EEF8; opacity: 0; transform: translateY(10px);
+            transition: all 0.3s ease; pointer-events: none; line-height: 1.5;
         }
-        #chat-bubble.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        #chat-bubble.show { opacity: 1; transform: translateY(0); }
         .robot-body {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 40px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border: 4px solid var(--pastel-blue);
-            cursor: pointer;
+            width: 80px; height: 80px; background: white; border-radius: 40px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 40px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 4px solid var(--pastel-blue); cursor: pointer;
         }
 
         /* Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 20px;
-            background: rgba(255,255,255,0.5);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid white;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #a1c4fd, #fdcbf1);
-            width: 0%;
-            transition: width 0.5s ease-out;
-        }
+        .progress-container { width: 100%; height: 20px; background: rgba(255,255,255,0.6); border-radius: 10px; overflow: hidden; border: 2px solid white; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #a1c4fd, #fdcbf1, #f6d365); width: 0%; transition: width 0.5s ease-out; }
 
         /* Drag and Drop/Click Select Styles */
         .item-chip {
-            background: white;
-            border: 3px solid #E0E0E0;
-            border-radius: 15px;
-            padding: 10px 15px;
-            margin: 5px;
-            display: inline-block;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            user-select: none;
+            background: white; border: 3px solid #E0E0E0; border-radius: 15px;
+            padding: 8px 12px; margin: 4px; display: inline-flex; align-items: center;
+            cursor: pointer; font-weight: bold; transition: all 0.2s; user-select: none; font-size: 0.95rem;
         }
         .item-chip:hover { transform: scale(1.05); border-color: #a1c4fd; }
-        .item-chip.selected { background: #fff59d; border-color: #fbc02d; transform: scale(1.1); box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
+        .item-chip.selected { background: #fff59d; border-color: #fbc02d; transform: scale(1.1); box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); z-index: 10;}
         
         .drop-zone {
-            min-height: 120px;
-            border: 4px dashed #BDBDBD;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.5);
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            transition: all 0.3s;
+            min-height: 100px; border: 4px dashed #BDBDBD; border-radius: 20px;
+            background: rgba(255,255,255,0.5); display: flex; flex-wrap: wrap; align-content: flex-start;
+            padding: 10px; gap: 8px; transition: all 0.3s;
         }
         .drop-zone.active { border-color: #8E44AD; background: var(--pastel-purple); }
 
-        /* Badge Styles */
+        /* Badges */
         .badge {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            background: #eee;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 30px;
-            filter: grayscale(100%);
-            transition: all 0.5s;
-            box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
+            width: 45px; height: 45px; border-radius: 50%; background: #eee;
+            display: flex; justify-content: center; align-items: center; font-size: 22px;
+            filter: grayscale(100%); transition: all 0.5s; box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
         }
         .badge.unlocked {
-            filter: grayscale(0%);
-            background: linear-gradient(135deg, #f6d365, #fda085);
-            box-shadow: 0 5px 15px rgba(245, 176, 65, 0.4);
-            transform: scale(1.1) rotate(10deg);
+            filter: grayscale(0%); background: linear-gradient(135deg, #f6d365, #fda085);
+            box-shadow: 0 3px 10px rgba(245, 176, 65, 0.4); transform: scale(1.1) rotate(5deg);
         }
-        
+
+        /* Debate Buttons */
+        .debate-btn {
+            flex: 1; padding: 20px; border-radius: 20px; border: 4px solid transparent;
+            font-size: 1.5rem; font-weight: 900; cursor: pointer; transition: all 0.3s;
+            display: flex; flex-direction: column; items-center; gap: 10px;
+        }
+        .debate-btn.unselected { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; }
+        .debate-btn.selected-yes { background: #d1fae5; color: #059669; border-color: #10b981; transform: scale(1.05); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+        .debate-btn.selected-no { background: #fee2e2; color: #dc2626; border-color: #ef4444; transform: scale(1.05); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
+
         .hidden { display: none !important; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative pb-24">
+<body class="min-h-screen flex flex-col relative pb-32">
 
-    <!-- Top Navigation & Progress -->
-    <header class="w-full max-w-4xl mx-auto p-4 flex flex-col gap-2 z-10 hidden" id="main-nav">
-        <div class="flex justify-between items-center glass-card px-6 py-3">
-            <div class="flex items-center gap-3">
+    <!-- Top Navigation -->
+    <header class="w-full max-w-5xl mx-auto p-4 flex flex-col gap-2 z-10 hidden" id="main-nav">
+        <div class="flex flex-col md:flex-row justify-between items-center glass-card px-6 py-3 gap-4">
+            <div class="flex items-center gap-3 w-full md:w-auto">
                 <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl shadow-inner border-2 border-purple-300">
                     <i class="fa-solid fa-user-astronaut text-purple-500"></i>
                 </div>
@@ -210,12 +163,13 @@
                 </div>
             </div>
             
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap justify-center">
                 <div class="badge" id="badge-1" title="生活探索者">🔍</div>
                 <div class="badge" id="badge-2" title="超能解鎖大師">⚡</div>
                 <div class="badge" id="badge-3" title="咒語詠唱者">🧙‍♂️</div>
                 <div class="badge" id="badge-4" title="AI大法官">⚖️</div>
                 <div class="badge" id="badge-5" title="人生航海家">🧭</div>
+                <div class="badge" id="badge-6" title="自主學習王">🚀</div>
             </div>
         </div>
         <div class="progress-container shadow-sm">
@@ -224,110 +178,119 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto" id="app-container">
+    <main class="flex-grow flex items-start justify-center p-4 w-full max-w-5xl mx-auto mt-4" id="app-container">
         <!-- Content injected here via JS -->
     </main>
 
     <!-- AI Companion -->
     <div id="ai-companion" class="hidden">
         <div id="chat-bubble">我來幫你囉！</div>
-        <div class="robot-body animate-float" onclick="companionPoke()">
-            🤖
-        </div>
+        <div class="robot-body animate-float" onclick="companionPoke()">🤖</div>
     </div>
 
     <!-- Application Logic -->
     <script>
-        // --- 1. Audio Engine (Web Audio API) ---
+        // --- 1. Audio Engine ---
         let audioCtx;
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
         function playSound(type) {
-            initAudio();
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            initAudio(); if (!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
             
             if (type === 'success') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.2);
             } else if (type === 'pop') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'magic') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.2);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             }
         }
 
         // --- 2. State Management ---
-        const state = {
-            playerName: '',
-            score: 0,
-            currentModule: 0, // 0 = Login, 1-5 = Modules, 6 = End
-            badges: [false, false, false, false, false],
-            selectedItem: null // For tap-to-place mechanics
+        const TOTAL_MODULES = 6;
+        let state = {
+            playerName: '', score: 0, currentModule: 0,
+            badges: [false, false, false, false, false, false],
+            selectedItem: null,
+            reflections: {
+                m1: '', m2: '', m3: '', m4_choice: '', m4_reason: '', m5: '', m6_t1: '', m6_t2: ''
+            }
         };
 
+        function saveState() { localStorage.setItem('aiAcademyState_v2', JSON.stringify(state)); }
+        function loadState() {
+            const saved = localStorage.getItem('aiAcademyState_v2');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Minimal restore: just name and maybe jump to start. For this demo, we restart but keep name.
+                    if(parsed.playerName) state.playerName = parsed.playerName;
+                } catch(e) {}
+            }
+        }
+
         // --- 3. Companion Logic ---
+        let speakTimeout;
         function speak(text, duration = 4000) {
+            clearTimeout(speakTimeout);
             const bubble = document.getElementById('chat-bubble');
-            bubble.innerText = text;
+            bubble.innerHTML = text;
             bubble.classList.add('show');
             playSound('pop');
-            setTimeout(() => { bubble.classList.remove('show'); }, duration);
+            speakTimeout = setTimeout(() => { bubble.classList.remove('show'); }, duration);
         }
         
         function companionPoke() {
-            const msgs = ["加油！你是最棒的！", "遇到困難了嗎？多試幾次！", "AI 是好幫手，但你才是主人喔！", "哇！你學得好快！"];
+            const msgs = ["加油！思考比答案更重要喔！", "深呼吸，慢慢寫沒關係！", "你覺得 AI 是朋友還是工具呢？", "哇！你學得好快！"];
             speak(msgs[Math.floor(Math.random() * msgs.length)]);
             document.querySelector('.robot-body').classList.add('animate-shake');
             setTimeout(() => document.querySelector('.robot-body').classList.remove('animate-shake'), 400);
         }
 
-        // --- 4. Render Functions ---
+        // --- 4. Render Engine ---
         const appContainer = document.getElementById('app-container');
 
         function updateUI() {
-            // Update Top Navigation
-            if (state.currentModule > 0 && state.currentModule < 6) {
+            if (state.currentModule > 0 && state.currentModule <= TOTAL_MODULES) {
                 document.getElementById('main-nav').classList.remove('hidden');
                 document.getElementById('ai-companion').classList.remove('hidden');
                 document.getElementById('display-name').innerText = state.playerName;
                 document.getElementById('display-score').innerText = state.score;
-                document.getElementById('progress-bar').style.width = `${(state.currentModule - 1) * 20}%`;
+                document.getElementById('progress-bar').style.width = `${((state.currentModule - 1) / TOTAL_MODULES) * 100}%`;
                 
                 state.badges.forEach((unlocked, idx) => {
-                    if (unlocked) document.getElementById(`badge-${idx+1}`).classList.add('unlocked');
+                    const b = document.getElementById(`badge-${idx+1}`);
+                    if(b) { unlocked ? b.classList.add('unlocked') : b.classList.remove('unlocked'); }
                 });
             } else {
                 document.getElementById('main-nav').classList.add('hidden');
             }
 
-            // Create new screen container
             appContainer.innerHTML = '';
             const screen = document.createElement('div');
             screen.className = 'w-full animate-pop';
             
-            // Generate HTML Content
             let htmlContent = '';
             switch(state.currentModule) {
                 case 0: htmlContent = renderLogin(); break;
@@ -336,49 +299,43 @@
                 case 3: htmlContent = renderModule3(); break;
                 case 4: htmlContent = renderModule4(); break;
                 case 5: htmlContent = renderModule5(); break;
-                case 6: htmlContent = renderEnd(); break;
+                case 6: htmlContent = renderModule6(); break;
+                case 7: htmlContent = renderEnd(); break;
             }
             screen.innerHTML = htmlContent;
-            
-            // **CRUCIAL FIX**: Append to DOM first before running any init functions
             appContainer.appendChild(screen);
 
-            // Run Initialization logic (event listeners, finding elements by ID)
             switch(state.currentModule) {
                 case 0: initLogin(); break;
                 case 1: initModule1(); break;
-                case 2: /* No extra init needed */ break;
+                case 2: /* handled in render */ break;
                 case 3: initModule3(); break;
-                case 4: /* No extra init needed */ break;
+                case 4: /* handled in render */ break;
                 case 5: initModule5(); break;
-                case 6: initEnd(); break;
+                case 6: /* handled in render */ break;
+                case 7: initEnd(); break;
             }
         }
 
-        // --- UI Feedback Modal (Custom Alert) ---
         function showFeedback(isCorrect, message, nextAction) {
             if (isCorrect) playSound('success'); else playSound('error');
             
             const modal = document.createElement('div');
-            modal.className = `fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 animate-pop`;
+            modal.className = `fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-pop backdrop-blur-sm`;
             modal.innerHTML = `
                 <div class="glass-card p-8 text-center max-w-sm mx-4 border-t-8 ${isCorrect ? 'border-t-green-400' : 'border-t-red-400'}">
                     <div class="text-6xl mb-4">${isCorrect ? '🎉' : '🤔'}</div>
-                    <h2 class="text-2xl font-bold mb-2 ${isCorrect ? 'text-green-600' : 'text-red-500'}">
-                        ${isCorrect ? '太棒了！' : '再想想看喔！'}
-                    </h2>
-                    <p class="text-gray-700 mb-6 font-bold">${message}</p>
+                    <h2 class="text-2xl font-bold mb-2 ${isCorrect ? 'text-green-600' : 'text-red-500'}">${isCorrect ? '太棒了！' : '再想想看喔！'}</h2>
+                    <p class="text-gray-700 mb-6 font-bold leading-relaxed">${message}</p>
                     <button class="btn-macaron ${isCorrect ? 'blue' : 'yellow'} w-full" id="feedback-btn">
-                        ${isCorrect ? '繼續挑戰 🚀' : '重新試試 ↺'}
+                        ${isCorrect ? '繼續 🚀' : '重新試試 ↺'}
                     </button>
                 </div>
             `;
             document.body.appendChild(modal);
             document.getElementById('feedback-btn').onclick = () => {
                 modal.remove();
-                if (isCorrect) {
-                    if (nextAction) nextAction();
-                }
+                if (isCorrect && nextAction) nextAction();
             };
         }
 
@@ -387,15 +344,16 @@
         // ==========================================
         function renderLogin() {
             return `
-                <div class="glass-card p-10 text-center max-w-md mx-auto relative overflow-hidden">
+                <div class="glass-card p-8 md:p-12 text-center max-w-md mx-auto relative overflow-hidden mt-10">
                     <div class="absolute -top-10 -left-10 text-8xl opacity-20">🤖</div>
                     <div class="absolute -bottom-10 -right-10 text-8xl opacity-20">✨</div>
-                    <h1 class="text-4xl font-black text-purple-600 mb-2 tracking-wider">AI 奇幻島</h1>
-                    <h2 class="text-xl font-bold text-gray-600 mb-8">國中生的 AI 魔法學院</h2>
+                    <h1 class="text-4xl md:text-5xl font-black text-purple-600 mb-2 tracking-wider">AI 奇幻島</h1>
+                    <h2 class="text-xl font-bold text-gray-600 mb-2">國中生的 AI 魔法學院</h2>
+                    <div class="inline-block bg-yellow-100 text-yellow-800 text-sm font-bold px-3 py-1 rounded-full mb-8">✨ 思辨升級版 ✨</div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-inner mb-6">
                         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=E0F7FA" alt="Robot" class="w-32 h-32 mx-auto mb-4 bg-blue-100 rounded-full border-4 border-white shadow-md animate-float">
-                        <input type="text" id="player-name" placeholder="請輸入你的魔法代號 (姓名)" class="w-full p-4 rounded-xl border-2 border-purple-200 focus:border-purple-500 focus:outline-none text-center font-bold text-lg mb-4">
+                        <input type="text" id="player-name" placeholder="請輸入你的魔法代號 (姓名)" class="w-full p-4 rounded-xl border-2 border-purple-200 focus:border-purple-500 focus:outline-none text-center font-bold text-lg mb-2">
                     </div>
                     
                     <button id="start-btn" class="btn-macaron text-xl w-full py-4 shadow-xl">開始奇幻旅程 🚀</button>
@@ -404,31 +362,43 @@
         }
 
         function initLogin() {
-            // Restore name from local storage
-            const savedName = localStorage.getItem('aiAcademyName');
-            if (savedName) {
-                document.getElementById('player-name').value = savedName;
-            }
+            loadState();
+            if (state.playerName) document.getElementById('player-name').value = state.playerName;
 
             document.getElementById('start-btn').onclick = () => {
-                initAudio(); // Initialize audio context on first user interaction
+                initAudio();
                 const name = document.getElementById('player-name').value.trim();
                 if (!name) { speak("請告訴我你的名字喔！"); return; }
                 state.playerName = name;
-                localStorage.setItem('aiAcademyName', name);
                 state.currentModule = 1;
+                state.score = 0;
+                saveState();
                 updateUI();
                 speak(`歡迎來到魔法學院，${name}！我們開始吧！`);
             };
         }
 
         // ==========================================
-        // MODULE 1: AI in Life (Tap to Classify)
+        // MODULE 1: AI in Life (Classification + Effort)
         // ==========================================
+        const m1Data = [
+            { id: 'i1', name: '掃地機器人', type: 'ai', icon: '🧹' },
+            { id: 'i2', name: 'YouTube 推薦影片', type: 'ai', icon: '📱' },
+            { id: 'i3', name: '傳統腳踏車', type: 'none', icon: '🚲' },
+            { id: 'i6', name: 'IG推薦貼文', type: 'ai', icon: '📸' },
+            { id: 'i7', name: 'Google地圖導航', type: 'ai', icon: '🗺️' },
+            { id: 'i4', name: '木頭鉛筆', type: 'none', icon: '✏️' },
+            { id: 'i8', name: '自動販賣機', type: 'none', icon: '🥤' },
+            { id: 'i5', name: '手機臉部解鎖', type: 'ai', icon: '😁' },
+            { id: 'i9', name: '智慧音箱(Siri)', type: 'ai', icon: '🔊' },
+            { id: 'i10', name: '紙本課本', type: 'none', icon: '📖' }
+        ];
+        let m1Correct = 0;
+
         function renderModule1() {
-            speak("四周有很多物品，哪些藏有 AI 魔法呢？點擊物品，再點擊箱子分類！");
+            speak("四周有很多物品，哪些藏有 AI 魔法呢？點擊物品，再點分類箱！");
             return `
-                <div class="glass-card p-6 w-full h-full flex flex-col">
+                <div class="glass-card p-6 w-full flex flex-col">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="text-3xl bg-blue-100 p-3 rounded-xl">🏝️</div>
                         <div>
@@ -437,44 +407,40 @@
                         </div>
                     </div>
 
-                    <div class="bg-blue-50 p-4 rounded-xl mb-6 min-h-[100px] flex flex-wrap gap-2 justify-center" id="m1-items">
-                        <!-- Items injected here -->
+                    <div id="m1-task-area">
+                        <div class="bg-blue-50 p-4 rounded-xl mb-4 flex flex-wrap gap-2 justify-center" id="m1-items"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-green-50 rounded-2xl p-4 border-4 border-green-200 flex flex-col">
+                                <h3 class="text-center font-black text-green-700 text-lg mb-2">🤖 包含 AI 魔法</h3>
+                                <div class="drop-zone flex-grow" id="zone-ai" onclick="placeItem('ai')"></div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-4 border-4 border-gray-200 flex flex-col">
+                                <h3 class="text-center font-black text-gray-600 text-lg mb-2">📦 一般物品 (無AI)</h3>
+                                <div class="drop-zone flex-grow" id="zone-none" onclick="placeItem('none')"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6 flex-grow">
-                        <div class="bg-green-50 rounded-2xl p-4 border-4 border-green-200 flex flex-col">
-                            <h3 class="text-center font-black text-green-700 text-xl mb-2">🤖 包含 AI 魔法</h3>
-                            <div class="drop-zone flex-grow" id="zone-ai" onclick="placeItem('ai')"></div>
-                        </div>
-                        <div class="bg-gray-50 rounded-2xl p-4 border-4 border-gray-200 flex flex-col">
-                            <h3 class="text-center font-black text-gray-600 text-xl mb-2">📦 一般物品 (無AI)</h3>
-                            <div class="drop-zone flex-grow" id="zone-none" onclick="placeItem('none')"></div>
-                        </div>
+                    <!-- Effort Section (Hidden initially) -->
+                    <div id="m1-effort" class="hidden animate-slide-in mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border-4 border-indigo-200">
+                        <h3 class="text-xl font-bold text-indigo-800 mb-2"><i class="fa-solid fa-lightbulb text-yellow-500 mr-2"></i> 魔法思考時間</h3>
+                        <p class="text-gray-700 font-bold mb-4 text-lg">你有沒有發現？像 IG貼文、YouTube、地圖導航，AI 都在『觀察你的習慣』來推薦內容。<br><span class="text-indigo-600">你覺得這樣好還是不好？為什麼？</span></p>
+                        <textarea id="m1-input" class="effort-input mb-4" placeholder="例如：我覺得很好，因為... / 我覺得不好，因為..."></textarea>
+                        <button class="btn-macaron blue w-full text-lg" onclick="submitM1Effort()">記錄想法並前進 🚀</button>
                     </div>
-                    
-                    <button class="btn-macaron mt-6 self-center hidden" id="m1-next" onclick="completeModule(1)">前往下一關 👉</button>
                 </div>
             `;
         }
 
-        const m1Data = [
-            { id: 'i1', name: '掃地機器人', type: 'ai', icon: '🧹' },
-            { id: 'i2', name: 'YouTube 推薦影片', type: 'ai', icon: '📱' },
-            { id: 'i3', name: '傳統腳踏車', type: 'none', icon: '🚲' },
-            { id: 'i4', name: '木頭鉛筆', type: 'none', icon: '✏️' },
-            { id: 'i5', name: '手機臉部解鎖', type: 'ai', icon: '😁' }
-        ];
-        let m1Correct = 0;
-
         function initModule1() {
             const container = document.getElementById('m1-items');
-            m1Correct = 0;
-            state.selectedItem = null;
-            m1Data.forEach(item => {
+            m1Correct = 0; state.selectedItem = null;
+            // Shuffle items
+            const shuffled = [...m1Data].sort(() => 0.5 - Math.random());
+            shuffled.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'item-chip';
-                div.id = item.id;
-                div.innerHTML = `<span class="text-2xl">${item.icon}</span> <span class="ml-1">${item.name}</span>`;
+                div.className = 'item-chip'; div.id = item.id;
+                div.innerHTML = `<span class="text-xl mr-1">${item.icon}</span> <span>${item.name}</span>`;
                 div.onclick = () => selectItem(item.id);
                 container.appendChild(div);
             });
@@ -484,56 +450,51 @@
             playSound('pop');
             document.querySelectorAll('.item-chip').forEach(el => el.classList.remove('selected'));
             const el = document.getElementById(id);
-            if(el) {
-                el.classList.add('selected');
-                state.selectedItem = id;
-                document.querySelectorAll('.drop-zone').forEach(z => z.classList.add('active'));
-            }
+            if(el) { el.classList.add('selected'); state.selectedItem = id; document.querySelectorAll('.drop-zone').forEach(z => z.classList.add('active')); }
         }
 
         function placeItem(targetZone) {
-            if (!state.selectedItem) {
-                speak("請先點選上方的一個物品喔！");
-                return;
-            }
+            if (!state.selectedItem) { speak("請先點選上方的一個物品喔！"); return; }
             
             const itemObj = m1Data.find(i => i.id === state.selectedItem);
             if (itemObj.type === targetZone) {
-                // Correct
                 const el = document.getElementById(state.selectedItem);
-                el.classList.remove('selected');
-                el.onclick = null; // disable
-                el.style.cursor = 'default';
+                el.classList.remove('selected'); el.onclick = null; el.style.cursor = 'default';
                 document.getElementById(`zone-${targetZone}`).appendChild(el);
                 
-                playSound('success');
-                m1Correct++;
-                speak(`答對了！${itemObj.name} ${targetZone==='ai'?'有用到AI技術喔！':'是一般物品。'}`, 3000);
+                playSound('success'); m1Correct++;
+                speak(`答對了！${itemObj.name} ${targetZone==='ai'?'有用到AI技術喔！':'是一般物品。'}`, 2000);
                 
-                state.selectedItem = null;
-                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+                state.selectedItem = null; document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
 
                 if (m1Correct === m1Data.length) {
                     state.score += 20;
-                    document.getElementById('m1-next').classList.remove('hidden');
-                    speak("太厲害了！全部都分類正確！", 5000);
+                    speak("太厲害了！全部都分類正確！現在來動動腦...", 4000);
+                    document.getElementById('m1-task-area').classList.add('opacity-50', 'pointer-events-none');
+                    document.getElementById('m1-effort').classList.remove('hidden');
                 }
             } else {
-                // Wrong
                 showFeedback(false, `${itemObj.name} 放錯箱子囉！再想一下。`);
-                const el = document.getElementById(state.selectedItem);
-                el.classList.remove('selected');
-                state.selectedItem = null;
-                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+                document.getElementById(state.selectedItem).classList.remove('selected');
+                state.selectedItem = null; document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
             }
         }
 
+        function submitM1Effort() {
+            const val = document.getElementById('m1-input').value.trim();
+            if(val.length < 2) { speak("請多寫一點你的想法喔！至少寫一句話。"); return; }
+            state.reflections.m1 = val;
+            state.score += 10; saveState();
+            state.badges[0] = true; state.currentModule = 2; updateUI();
+        }
+
         // ==========================================
-        // MODULE 2: AI Capabilities (Scenario Quiz)
+        // MODULE 2: AI Capabilities (Scenario + Effort)
         // ==========================================
         const m2Questions = [
-            { q: "你要做歷史報告，遇到瓶頸不知道怎麼下筆，AI 可以幫你做什麼？", opts: ["A. 直接幫我寫完所有內容，我直接交出去。", "B. 幫我發想報告的大綱與結構，讓我比較有靈感。", "C. AI 不能幫忙寫作業。"], ans: 1, exp: "AI 是很好的「靈感發想機」，幫你規劃大綱，但內容還是要自己吸收轉化喔！" },
-            { q: "AI 在「藝術創作」上最擅長什麼？", opts: ["A. 根據你給的文字（提示詞）生成對應的圖片。", "B. 取代所有人類畫家。", "C. 自己憑空產生想法，不需要人類下指令。"], ans: 0, exp: "生成式 AI（如 Midjourney）能根據你的文字描述生成圖片，人類的創意指令才是關鍵！" }
+            { q: "你要做歷史報告，遇到瓶頸不知道怎麼下筆，AI 可以幫你做什麼？", opts: ["A. 直接幫我寫完所有內容交出去", "B. 幫我發想大綱，讓我比較有靈感", "C. AI 不能幫忙寫作業"], ans: 1, exp: "AI 是很好的「靈感發想機」，幫你規劃大綱，但內容還是要自己吸收轉化喔！" },
+            { q: "你想寫一首畢業歌，但沒靈感，AI最適合幫你做什麼？", opts: ["A. 直接幫我寫一首我就交出去", "B. 提供歌詞靈感與旋律方向", "C. 幫我決定我要不要畢業"], ans: 1, exp: "AI可以幫你發想，但情感還是你自己的！畢業的心情只有你最懂。" },
+            { q: "你看到一張AI生成的圖片很酷想分享，你應該怎麼做？", opts: ["A. 說是自己辛苦畫的", "B. 標註這是AI生成的圖片", "C. 不用管直接發"], ans: 1, exp: "誠實標註是AI素養很重要的一部分！尊重自己也尊重創作者。" }
         ];
         let m2CurrentQ = 0;
 
@@ -541,7 +502,7 @@
             speak("第二關：解鎖 AI 的超能力！回答情境問題。");
             m2CurrentQ = 0;
             return `
-                <div class="glass-card p-8 w-full">
+                <div class="glass-card p-6 md:p-8 w-full">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="text-3xl bg-yellow-100 p-3 rounded-xl">⚡</div>
                         <div>
@@ -549,7 +510,7 @@
                             <p class="text-gray-600 font-bold">遇到這些情況，AI 可以怎麼幫忙？</p>
                         </div>
                     </div>
-                    <div id="m2-content" class="bg-white p-6 rounded-2xl border-4 border-yellow-100 shadow-sm">
+                    <div id="m2-content" class="bg-white p-6 rounded-2xl border-4 border-yellow-100 shadow-sm relative min-h-[300px]">
                         ${getM2QuestionHTML()}
                     </div>
                 </div>
@@ -558,50 +519,68 @@
 
         function getM2QuestionHTML() {
             if (m2CurrentQ >= m2Questions.length) {
+                // Show Effort Question
+                speak("太棒了，情境題全對！最後一個小問題...", 3000);
                 return `
-                    <div class="text-center py-8">
-                        <div class="text-6xl mb-4">🏆</div>
-                        <h3 class="text-2xl font-bold text-purple-600 mb-4">超能力完全解鎖！</h3>
-                        <p class="text-gray-600 font-bold mb-6">你已經了解 AI 是輔助我們學習與創作的好幫手了！</p>
-                        <button class="btn-macaron yellow" onclick="completeModule(2)">前往下一關 👉</button>
+                    <div class="animate-slide-in text-left">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-3xl">🤔</span>
+                            <h3 class="text-xl font-bold text-purple-600">魔法反思</h3>
+                        </div>
+                        <p class="text-gray-700 font-bold mb-4 text-lg bg-yellow-50 p-4 rounded-xl border-l-4 border-yellow-400">
+                            如果這個世界<span class="text-red-500 font-black">沒有 AI</span>，你做作業或學習時會有什麼不同？請寫 1 句話。
+                        </p>
+                        <textarea id="m2-input" class="effort-input mb-4" placeholder="例如：我可能要花更多時間查資料..."></textarea>
+                        <button class="btn-macaron yellow w-full text-lg" onclick="submitM2Effort()">提交想法 👉</button>
                     </div>
                 `;
             }
             const q = m2Questions[m2CurrentQ];
             let optsHTML = q.opts.map((opt, idx) => `
-                <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 font-bold text-gray-700 transition-all mb-3 shadow-sm"
+                <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 font-bold text-gray-700 transition-all mb-3 shadow-sm text-lg"
                         onclick="checkM2Answer(${idx})">
                     ${opt}
                 </button>
             `).join('');
 
             return `
-                <h3 class="text-xl font-bold text-gray-800 mb-6 leading-relaxed">
-                    <span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-lg mr-2">情境 ${m2CurrentQ + 1}</span>
-                    ${q.q}
-                </h3>
-                <div class="flex flex-col">${optsHTML}</div>
+                <div class="animate-pop">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 leading-relaxed">
+                        <span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-lg mr-2 inline-block mb-2">情境 ${m2CurrentQ + 1}</span><br>
+                        ${q.q}
+                    </h3>
+                    <div class="flex flex-col">${optsHTML}</div>
+                </div>
             `;
         }
 
         function checkM2Answer(idx) {
             const q = m2Questions[m2CurrentQ];
             if (idx === q.ans) {
-                state.score += 15;
+                state.score += 10;
                 showFeedback(true, q.exp, () => {
-                    m2CurrentQ++;
-                    document.getElementById('m2-content').innerHTML = getM2QuestionHTML();
+                    m2CurrentQ++; document.getElementById('m2-content').innerHTML = getM2QuestionHTML();
                 });
-            } else {
-                showFeedback(false, "再仔細想想！AI 是輔助工具，不是替代品喔。");
-            }
+            } else { showFeedback(false, "再仔細想想！AI 是輔助工具，不是替代品喔。"); }
+        }
+
+        function submitM2Effort() {
+            const val = document.getElementById('m2-input').value.trim();
+            if(val.length < 2) { speak("寫一句話就好，試試看表達你的想法！"); return; }
+            state.reflections.m2 = val;
+            state.score += 10; saveState();
+            state.badges[1] = true; state.currentModule = 3; updateUI();
         }
 
         // ==========================================
-        // MODULE 3: Generative AI Lab (The Core Feature)
+        // MODULE 3: Generative AI Lab (Quiz -> Builder -> Free Input)
         // ==========================================
+        let m3Stage = 0; // 0: Quiz, 1: Builder, 2: Free Input
+        let m3SelectedEl = null;
+
         function renderModule3() {
-            speak("歡迎來到最酷的實驗室！跟我一起學習怎麼寫出神級的 Prompt (提示詞) 吧！");
+            m3Stage = 0;
+            speak("第三關：創作實驗室！我們先來測試一下你對 Prompt (提示詞) 的敏銳度！");
             return `
                 <div class="glass-card p-6 w-full">
                     <div class="flex items-center gap-3 mb-4">
@@ -611,133 +590,207 @@
                             <p class="text-gray-600 font-bold text-sm">好指令＝「目標主角」＋「環境條件」＋「風格氛圍」</p>
                         </div>
                     </div>
+                    <div id="m3-content" class="w-full relative min-h-[400px]">
+                        ${renderM3Stage0()}
+                    </div>
+                </div>
+            `;
+        }
 
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <!-- Left: Builder -->
-                        <div class="bg-gray-50 p-4 rounded-2xl border-4 border-gray-200">
-                            <h3 class="font-black text-gray-700 mb-3 border-b-2 pb-2">1. 選擇詞彙卡片 (點擊)</h3>
-                            <div class="flex flex-wrap gap-2 mb-6" id="m3-words">
-                                <div class="item-chip bg-white border-pink-300 text-pink-700" onclick="selectM3Word(this, 'word')">一隻可愛的柴犬</div>
-                                <div class="item-chip bg-white border-pink-300 text-pink-700" onclick="selectM3Word(this, 'word')">一台未來的跑車</div>
-                                <div class="item-chip bg-white border-blue-300 text-blue-700" onclick="selectM3Word(this, 'word')">在太空漫步</div>
-                                <div class="item-chip bg-white border-blue-300 text-blue-700" onclick="selectM3Word(this, 'word')">在充滿螢火蟲的森林</div>
-                                <div class="item-chip bg-white border-purple-300 text-purple-700" onclick="selectM3Word(this, 'word')">吉卜力動漫風</div>
-                                <div class="item-chip bg-white border-purple-300 text-purple-700" onclick="selectM3Word(this, 'word')">3D 寫實風格</div>
-                            </div>
+        // M3 Stage 0: Comparison Quiz
+        function renderM3Stage0() {
+            return `
+                <div class="bg-white p-6 rounded-2xl border-4 border-pink-100 shadow-sm animate-pop max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
+                        <span class="text-2xl">🤔</span> 想要 AI 畫出你心中的畫面，<span class="text-pink-600">哪一個 Prompt (提示詞) 比較好？</span>
+                    </h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <button class="flex-1 p-6 rounded-xl border-4 border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition-all font-bold text-lg text-gray-700 flex flex-col items-center gap-2" onclick="checkM3Quiz(0)">
+                            <span class="text-4xl text-gray-400">A</span>
+                            <span>「畫一隻狗」</span>
+                        </button>
+                        <button class="flex-1 p-6 rounded-xl border-4 border-gray-200 hover:border-pink-400 hover:bg-pink-50 transition-all font-bold text-lg text-pink-700 flex flex-col items-center gap-2" onclick="checkM3Quiz(1)">
+                            <span class="text-4xl text-pink-500">B</span>
+                            <span>「畫一隻在夕陽下奔跑的柴犬，動漫風」</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
 
-                            <h3 class="font-black text-gray-700 mb-3 border-b-2 pb-2">2. 放入咒語插槽 (點擊框框)</h3>
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-16 font-bold text-pink-600 text-right">🎯 目標</span>
-                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-target" onclick="placeM3Word('slot-target')"></div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-16 font-bold text-blue-600 text-right">🌍 條件</span>
-                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-condition" onclick="placeM3Word('slot-condition')"></div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-16 font-bold text-purple-600 text-right">🎨 風格</span>
-                                    <div class="drop-zone flex-grow min-h-[50px] p-2 bg-white" id="slot-style" onclick="placeM3Word('slot-style')"></div>
-                                </div>
-                            </div>
-                            
-                            <button class="btn-macaron w-full mt-6 shadow-md" onclick="generateImage()">🪄 施展魔法 (生成)</button>
+        function checkM3Quiz(ans) {
+            if (ans === 1) {
+                state.score += 10;
+                showFeedback(true, "答對了！提示詞越具體（包含主角、環境、風格），AI 畫出來的東西越符合你的期待！", () => {
+                    m3Stage = 1;
+                    document.getElementById('m3-content').innerHTML = renderM3Stage1();
+                    initM3Stage1();
+                });
+            } else { showFeedback(false, "太簡短了！AI 可能會畫出一隻你根本不想要的狗喔。選另一個看看！"); }
+        }
+
+        // M3 Stage 1: Drag & Drop Builder
+        function renderM3Stage1() {
+            speak("太棒了！現在換你親自拼湊魔法陣！");
+            return `
+                <div class="grid md:grid-cols-2 gap-4 animate-slide-in">
+                    <div class="bg-gray-50 p-4 rounded-2xl border-4 border-gray-200">
+                        <h3 class="font-black text-gray-700 mb-2 border-b-2 pb-1 text-sm">1. 選擇詞彙卡片 (點擊)</h3>
+                        <div class="flex flex-wrap gap-2 mb-4" id="m3-words">
+                            <!-- Words injected via JS -->
                         </div>
 
-                        <!-- Right: Result -->
-                        <div class="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden border-4 border-purple-300 shadow-inner">
-                            <h3 class="absolute top-4 left-4 text-white font-bold opacity-70">AI 畫布預覽</h3>
-                            
-                            <div id="ai-canvas" class="w-48 h-48 bg-black bg-opacity-30 rounded-2xl border-2 border-dashed border-white border-opacity-30 flex flex-col items-center justify-center text-white transition-all duration-500">
-                                <span class="text-4xl mb-2 opacity-50">🖼️</span>
-                                <span class="text-sm opacity-50 font-bold">等待提示詞...</span>
+                        <h3 class="font-black text-gray-700 mb-2 border-b-2 pb-1 text-sm">2. 放入咒語插槽 (點擊框框)</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-16 font-bold text-pink-600 text-right text-sm">🎯 主角</span>
+                                <div class="drop-zone flex-grow min-h-[45px] p-2 bg-white" id="slot-target" onclick="placeM3Word('slot-target')"></div>
                             </div>
-                            
-                            <p id="canvas-desc" class="text-white text-center mt-4 font-bold text-sm h-10 opacity-80"></p>
-                            
-                            <button id="m3-next" class="btn-macaron mt-4 hidden z-10" onclick="completeModule(3)">完美！下一關 👉</button>
+                            <div class="flex items-center gap-2">
+                                <span class="w-16 font-bold text-blue-600 text-right text-sm">🌍 環境</span>
+                                <div class="drop-zone flex-grow min-h-[45px] p-2 bg-white" id="slot-condition" onclick="placeM3Word('slot-condition')"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-16 font-bold text-purple-600 text-right text-sm">🎨 風格</span>
+                                <div class="drop-zone flex-grow min-h-[45px] p-2 bg-white" id="slot-style" onclick="placeM3Word('slot-style')"></div>
+                            </div>
+                        </div>
+                        <button class="btn-macaron w-full mt-4 shadow-md" onclick="generateImageStage1()">🪄 組合生成</button>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden border-4 border-purple-300 shadow-inner min-h-[300px]">
+                        <h3 class="absolute top-4 left-4 text-white font-bold opacity-70">AI 畫布預覽</h3>
+                        <div id="ai-canvas" class="w-48 h-48 bg-black bg-opacity-30 rounded-2xl border-2 border-dashed border-white border-opacity-30 flex flex-col items-center justify-center text-white transition-all duration-500">
+                            <span class="text-4xl mb-2 opacity-50">🖼️</span>
+                            <span class="text-sm opacity-50 font-bold">等待提示詞...</span>
+                        </div>
+                        <p id="canvas-desc" class="text-white text-center mt-4 font-bold text-sm h-10 opacity-80 px-2"></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initM3Stage1() {
+            const words = [
+                {t: "一位國中生", c: "pink"}, {t: "一隻可愛的柴犬", c: "pink"},
+                {t: "在教室使用AI學習", c: "blue"}, {t: "在充滿螢火蟲的森林", c: "blue"},
+                {t: "卡通風", c: "purple"}, {t: "未來科技風", c: "purple"}, {t: "夜晚燈光", c: "purple"}
+            ];
+            const container = document.getElementById('m3-words');
+            m3SelectedEl = null;
+            words.forEach((w, i) => {
+                const div = document.createElement('div');
+                div.className = `item-chip bg-white border-${w.c}-300 text-${w.c}-700`;
+                div.innerText = w.t;
+                div.onclick = () => {
+                    playSound('pop');
+                    document.querySelectorAll('#m3-words .item-chip').forEach(e => e.classList.remove('selected'));
+                    div.classList.add('selected'); m3SelectedEl = div;
+                    document.querySelectorAll('#slot-target, #slot-condition, #slot-style').forEach(z => z.classList.add('active'));
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function placeM3Word(slotId) {
+            if (!m3SelectedEl) return;
+            const slot = document.getElementById(slotId);
+            if (slot.children.length > 0) {
+                const oldItem = slot.children[0]; document.getElementById('m3-words').appendChild(oldItem);
+            }
+            m3SelectedEl.classList.remove('selected');
+            slot.appendChild(m3SelectedEl);
+            playSound('pop'); m3SelectedEl = null;
+            document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+        }
+
+        function generateImageStage1() {
+            const t = document.getElementById('slot-target').innerText.trim();
+            const c = document.getElementById('slot-condition').innerText.trim();
+            const s = document.getElementById('slot-style').innerText.trim();
+
+            if (!t || !c || !s) { showFeedback(false, "魔法陣還沒填滿喔！三個插槽都要放入詞彙。"); return; }
+
+            const canvas = document.getElementById('ai-canvas');
+            const desc = document.getElementById('canvas-desc');
+            
+            canvas.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-4xl text-pink-300"></i><p class="mt-2 text-sm text-pink-200">AI 繪製中...</p>`;
+            playSound('magic'); speak("正在把你的想像變成畫面...", 2000);
+
+            setTimeout(() => {
+                playSound('success');
+                let emoji = "✨"; if (t.includes("柴犬")) emoji = "🐕"; else if (t.includes("國中生")) emoji = "🧑‍🎓";
+                let bgClass = "from-pink-400 to-purple-500";
+                if (c.includes("森林")) bgClass = "from-green-600 to-emerald-900"; else if (c.includes("教室")) bgClass = "from-blue-400 to-indigo-600";
+
+                canvas.className = `w-48 h-48 rounded-2xl shadow-2xl flex items-center justify-center text-6xl transform scale-110 transition-all duration-500 bg-gradient-to-br ${bgClass} border-4 border-white animate-pop`;
+                canvas.innerHTML = emoji;
+                desc.innerText = `「${t}，${c}，${s}」`;
+                state.score += 20;
+                
+                setTimeout(() => {
+                    speak("太酷了！現在換你完全自己設計！", 4000);
+                    m3Stage = 2;
+                    document.getElementById('m3-content').innerHTML = renderM3Stage2();
+                }, 2500);
+            }, 1500);
+        }
+
+        // M3 Stage 2: Free Input Prompt
+        function renderM3Stage2() {
+            return `
+                <div class="bg-white p-6 rounded-2xl border-4 border-pink-200 shadow-sm animate-slide-in flex flex-col md:flex-row gap-6">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-3xl">🌟</span>
+                            <h3 class="text-xl font-bold text-pink-600">進階挑戰：自己的世界自己創</h3>
+                        </div>
+                        <p class="text-gray-700 font-bold mb-4 bg-pink-50 p-3 rounded-lg">
+                            請你用打字的，設計一個屬於你的<span class="text-pink-600">「夢想 AI 世界」</span>。<br>
+                            <span class="text-sm text-gray-500">（記得包含：主角 ＋ 場景 ＋ 風格 喔！）</span>
+                        </p>
+                        <textarea id="m3-input" class="effort-input mb-4 h-32" placeholder="例如：一隻戴著墨鏡的貓咪，在充滿霓虹燈的賽博龐克城市裡開跑車，3D寫實風格..."></textarea>
+                        <button class="btn-macaron pink w-full text-lg" onclick="submitM3Stage2()">✨ 終極生成</button>
+                    </div>
+                    <div class="w-full md:w-64 bg-gray-900 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden border-4 border-gray-700">
+                         <div id="ai-canvas-final" class="w-full aspect-square bg-gray-800 rounded-xl border-2 border-dashed border-gray-600 flex flex-col items-center justify-center text-white">
+                            <span class="text-4xl mb-2 opacity-30">✨</span>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        let m3SelectedEl = null;
-        function initModule3() { 
-            m3SelectedEl = null; 
-        }
-
-        function selectM3Word(el) {
-            playSound('pop');
-            document.querySelectorAll('#m3-words .item-chip').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-            m3SelectedEl = el;
-            document.querySelectorAll('#slot-target, #slot-condition, #slot-style').forEach(z => z.classList.add('active'));
-        }
-
-        function placeM3Word(slotId) {
-            if (!m3SelectedEl) return;
-            const slot = document.getElementById(slotId);
-            // Clear slot first
-            if (slot.children.length > 0) {
-                const oldItem = slot.children[0];
-                document.getElementById('m3-words').appendChild(oldItem);
-            }
+        function submitM3Stage2() {
+            const val = document.getElementById('m3-input').value.trim();
+            if(val.length < 5) { speak("咒語太短了！多描述一點細節，AI 會畫得更好喔！"); return; }
             
-            m3SelectedEl.classList.remove('selected');
-            slot.appendChild(m3SelectedEl);
-            playSound('pop');
-            m3SelectedEl = null;
-            document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
-        }
-
-        function generateImage() {
-            const t = document.getElementById('slot-target').innerText.trim();
-            const c = document.getElementById('slot-condition').innerText.trim();
-            const s = document.getElementById('slot-style').innerText.trim();
-
-            if (!t || !c || !s) {
-                showFeedback(false, "魔法陣還沒填滿喔！請確保「目標」、「條件」、「風格」都有放入詞彙。");
-                return;
-            }
-
-            const canvas = document.getElementById('ai-canvas');
-            const desc = document.getElementById('canvas-desc');
+            const canvas = document.getElementById('ai-canvas-final');
+            canvas.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles fa-bounce text-4xl text-pink-400"></i>`;
+            playSound('magic');
             
-            // Animation
-            canvas.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-4xl text-pink-300"></i><p class="mt-2 text-sm text-pink-200">AI 繪製中...</p>`;
-            playSound('pop');
-            speak("正在把你的想像變成畫面...", 2000);
-
             setTimeout(() => {
                 playSound('success');
-                // Simple logic to show different emojis based on combination
-                let emoji = "✨";
-                if (t.includes("柴犬")) emoji = "🐕";
-                if (t.includes("跑車")) emoji = "🏎️";
+                canvas.className = `w-full aspect-square rounded-xl flex items-center justify-center text-6xl bg-gradient-to-tr from-fuchsia-500 to-cyan-500 border-4 border-white animate-pop shadow-[0_0_20px_rgba(236,72,153,0.5)]`;
+                canvas.innerHTML = "🌌";
                 
-                let bgClass = "from-pink-400 to-purple-500";
-                if (c.includes("太空")) bgClass = "from-gray-900 to-blue-900";
-                if (c.includes("森林")) bgClass = "from-green-600 to-emerald-900";
-
-                canvas.className = `w-48 h-48 rounded-2xl shadow-2xl flex items-center justify-center text-6xl transform scale-110 transition-all duration-500 bg-gradient-to-br ${bgClass} border-4 border-white animate-pop`;
-                canvas.innerHTML = emoji;
+                state.reflections.m3 = val;
+                state.score += 20; saveState();
+                state.badges[2] = true; 
                 
-                desc.innerText = `「${t}，${c}，${s}」`;
-                
-                state.score += 30;
-                speak("太神啦！這就是精準 Prompt 的威力！");
-                document.getElementById('m3-next').classList.remove('hidden');
-            }, 1500);
+                speak("魔法大成功！你已經是 Prompt 大師了！", 3000);
+                setTimeout(() => { state.currentModule = 4; updateUI(); }, 3000);
+            }, 2000);
         }
 
         // ==========================================
-        // MODULE 4: AI Safety Court
+        // MODULE 4: AI Safety Court (Quiz + Debate)
         // ==========================================
         const m4Cases = [
-            { q: "為了註冊免費的 AI 網站，小明輸入了自己的身分證字號與家裡住址。這樣做安全嗎？", ans: false, exp: "絕對不行！❌ 不要將重要的個人隱私資料輸入給 AI，因為資料可能會被用來訓練模型或外洩。" },
-            { q: "小華用 AI 幫忙整理英文文章的單字，然後自己背起來。這樣算作弊嗎？", ans: true, exp: "很棒的用法！✅ 把 AI 當作專屬家教幫忙整理資料，最後知識還是進到自己腦袋裡。" },
-            { q: "小美直接複製 AI 寫的作文當作自己的暑假作業交給老師，並且沒有標註使用 AI。這樣可以嗎？", ans: false, exp: "不可以喔！❌ 這是學術不誠實。應該自己構思，AI 只能輔助修改錯字或提供靈感，而且若有使用應該誠實標註。" }
+            { q: "為了註冊免費的 AI 網站，小明輸入了自己的身分證字號與家裡住址。這樣安全嗎？", ans: false, exp: "絕對不行！❌ 不要將重要個資輸入給 AI，資料可能會被用來訓練模型或外洩。" },
+            { q: "小華用 AI 幫忙整理英文文章的單字，然後自己背起來。這樣算作弊嗎？", ans: true, exp: "很棒的用法！✅ 把 AI 當作專屬家教幫忙整理資料，知識還是進到自己腦袋裡。" },
+            { q: "小美直接複製 AI 寫的作文當作自己的暑假作業，並且沒有標註使用 AI。這樣可以嗎？", ans: false, exp: "不可以喔！❌ 這是學術不誠實。應該自己構思，並誠實標註使用工具。" },
+            { q: "用 AI 寫作業，但有仔細看過內容、改成自己的語氣，並且在文末註明「使用AI輔助潤飾」。這樣可以嗎？", ans: true, exp: "可以的！✅ 有經過自己的「理解與修改」，並且「誠實標註」，這才是正確的 AI 素養！" }
         ];
         let m4Current = 0;
 
@@ -745,7 +798,7 @@
             speak("來到 AI 法庭！請擔任大法官，判斷這些行為是對還是錯？");
             m4Current = 0;
             return `
-                <div class="glass-card p-8 w-full">
+                <div class="glass-card p-6 md:p-8 w-full">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="text-3xl bg-red-100 p-3 rounded-xl">⚖️</div>
                         <div>
@@ -762,28 +815,46 @@
 
         function getM4HTML() {
             if (m4Current >= m4Cases.length) {
+                // Show Debate Section
+                speak("法官大人，最後有一個爭議性案件，請做出你的判決！", 3000);
                 return `
-                    <div class="py-8 animate-pop">
-                        <div class="text-6xl mb-4">🎖️</div>
-                        <h3 class="text-2xl font-bold text-red-600 mb-4">法官大人，審理完畢！</h3>
-                        <p class="text-gray-700 font-bold mb-6">你已經具備安全使用 AI 的觀念，記得保護個資、誠實使用喔！</p>
-                        <button class="btn-macaron blue" onclick="completeModule(4)">前往最終關卡 👉</button>
+                    <div class="animate-slide-in text-left bg-red-50 p-6 rounded-2xl border-4 border-red-200">
+                        <div class="flex items-center gap-2 mb-4 justify-center">
+                            <span class="text-3xl">🔥</span>
+                            <h3 class="text-2xl font-black text-red-600">終極辯論庭</h3>
+                        </div>
+                        <p class="text-gray-800 font-black mb-6 text-xl text-center">「AI 應不應該幫學生寫作業？」</p>
+                        
+                        <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <button id="btn-debate-yes" class="debate-btn unselected" onclick="selectDebate('應該')">
+                                <span class="text-4xl">⭕</span> 應該
+                            </button>
+                            <button id="btn-debate-no" class="debate-btn unselected" onclick="selectDebate('不應該')">
+                                <span class="text-4xl">❌</span> 不應該
+                            </button>
+                        </div>
+
+                        <div id="debate-reason-area" class="hidden animate-pop">
+                            <p class="text-gray-700 font-bold mb-2">請說出你的理由（法官判決書）：</p>
+                            <textarea id="m4-input" class="effort-input mb-4" placeholder="我覺得... 因為..."></textarea>
+                            <button class="btn-macaron red w-full text-lg" onclick="submitM4Debate()">敲下法槌 (送出) 🔨</button>
+                        </div>
                     </div>
                 `;
             }
             const c = m4Cases[m4Current];
             return `
-                <div class="bg-gray-50 border-4 border-gray-200 rounded-2xl p-8 mb-8 relative animate-pop">
+                <div class="bg-gray-50 border-4 border-gray-200 rounded-2xl p-6 md:p-8 mb-8 relative animate-pop min-h-[150px] flex items-center justify-center">
                     <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-500 text-white font-black px-4 py-1 rounded-full shadow-md">
                         案卷 ${m4Current + 1}
                     </div>
-                    <p class="text-xl font-bold text-gray-800 mt-4 leading-relaxed">${c.q}</p>
+                    <p class="text-xl font-bold text-gray-800 leading-relaxed">${c.q}</p>
                 </div>
-                <div class="flex justify-center gap-6">
-                    <button class="btn-macaron bg-gradient-to-r from-green-400 to-green-500 shadow-green-200 text-2xl px-8 py-4 flex flex-col items-center gap-2 hover:scale-105" onclick="checkM4(true)">
-                        <span>⭕</span><span class="text-sm">這樣OK</span>
+                <div class="flex justify-center gap-4 md:gap-8">
+                    <button class="btn-macaron bg-gradient-to-r from-green-400 to-green-500 shadow-green-200 text-xl px-8 py-4 flex flex-col items-center gap-1 hover:scale-105" onclick="checkM4(true)">
+                        <span>⭕</span><span class="text-sm">這樣 OK</span>
                     </button>
-                    <button class="btn-macaron bg-gradient-to-r from-red-400 to-red-500 shadow-red-200 text-2xl px-8 py-4 flex flex-col items-center gap-2 hover:scale-105" onclick="checkM4(false)">
+                    <button class="btn-macaron bg-gradient-to-r from-red-400 to-red-500 shadow-red-200 text-xl px-8 py-4 flex flex-col items-center gap-1 hover:scale-105" onclick="checkM4(false)">
                         <span>❌</span><span class="text-sm">這不行</span>
                     </button>
                 </div>
@@ -793,75 +864,104 @@
         function checkM4(userAns) {
             const c = m4Cases[m4Current];
             if (userAns === c.ans) {
-                state.score += 15;
+                state.score += 10;
                 showFeedback(true, c.exp, () => {
-                    m4Current++;
-                    document.getElementById('m4-content').innerHTML = getM4HTML();
+                    m4Current++; document.getElementById('m4-content').innerHTML = getM4HTML();
                 });
-            } else {
-                showFeedback(false, c.exp);
-            }
+            } else { showFeedback(false, c.exp); }
+        }
+
+        let currentDebateChoice = '';
+        function selectDebate(choice) {
+            playSound('pop');
+            currentDebateChoice = choice;
+            const btnYes = document.getElementById('btn-debate-yes');
+            const btnNo = document.getElementById('btn-debate-no');
+            
+            btnYes.className = 'debate-btn ' + (choice === '應該' ? 'selected-yes' : 'unselected opacity-50');
+            btnNo.className = 'debate-btn ' + (choice === '不應該' ? 'selected-no' : 'unselected opacity-50');
+            
+            document.getElementById('debate-reason-area').classList.remove('hidden');
+            speak(choice === '應該' ? "你選擇了『應該』，請告訴我為什麼？" : "你選擇了『不應該』，請告訴我為什麼？");
+        }
+
+        function submitM4Debate() {
+            const val = document.getElementById('m4-input').value.trim();
+            if(val.length < 5) { speak("法官大人，判決理由太短了，請多寫一點！"); return; }
+            
+            state.reflections.m4_choice = currentDebateChoice;
+            state.reflections.m4_reason = val;
+            state.score += 20; saveState();
+            state.badges[3] = true;
+            
+            playSound('success');
+            speak("鏗！判決確定！這個世界上沒有絕對的對錯，你的思考很有價值！", 4000);
+            setTimeout(() => { state.currentModule = 5; updateUI(); }, 3500);
         }
 
         // ==========================================
-        // MODULE 5: Life Choices (Categorization)
+        // MODULE 5: Life Choices (Categorization + Reflection)
         // ==========================================
+        const m5Data = [
+            { id: 't1', name: '檢查英文拼字錯誤', type: 'ai-do' },
+            { id: 't2', name: '寫日記抒發心情', type: 'me-do' },
+            { id: 't4', name: '萬字長文整理重點', type: 'ai-do' },
+            { id: 't5', name: '和朋友吵架後的道歉', type: 'me-do' },
+            { id: 't6', name: '幫我整理考試重點', type: 'ai-do' },
+            { id: 't7', name: '決定要不要跟朋友和好', type: 'me-do' },
+            { id: 't8', name: '幫我翻譯英文句子', type: 'ai-do' },
+            { id: 't9', name: '選擇未來人生方向', type: 'me-do' }
+        ];
+        let m5Correct = 0; let m5Selected = null;
+
         function renderModule5() {
-            speak("最後一關：未來的主人翁！有些事能交給 AI，有些事一定要自己來！");
+            speak("第五關：有些事能交給 AI，有些事一定要自己來！請分類！");
             return `
-                <div class="glass-card p-6 w-full h-full flex flex-col">
+                <div class="glass-card p-6 w-full flex flex-col">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="text-3xl bg-indigo-100 p-3 rounded-xl">⛰️</div>
                         <div>
-                            <h2 class="text-2xl font-bold text-indigo-800">最終關：決策山巔</h2>
+                            <h2 class="text-2xl font-bold text-indigo-800">第五關：決策山巔</h2>
                             <p class="text-gray-600 font-bold text-sm">把任務分派給「AI 助理」或「自己」</p>
                         </div>
                     </div>
 
-                    <div class="bg-indigo-50 p-4 rounded-xl mb-4 flex flex-wrap gap-2 justify-center min-h-[80px]" id="m5-items">
-                        <!-- Items here -->
+                    <div id="m5-task-area">
+                        <div class="bg-indigo-50 p-4 rounded-xl mb-4 flex flex-wrap gap-2 justify-center" id="m5-items"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 rounded-2xl p-4 border-4 border-blue-200 flex flex-col">
+                                <h3 class="text-center font-black text-blue-700 mb-2">🤖 AI 幫忙做 (省時/整理)</h3>
+                                <div class="drop-zone flex-grow" id="zone-ai-do" onclick="placeM5Item('ai-do')"></div>
+                            </div>
+                            <div class="bg-orange-50 rounded-2xl p-4 border-4 border-orange-200 flex flex-col">
+                                <h3 class="text-center font-black text-orange-700 mb-2">🙋‍♂️ 我自己做 (情感/決策)</h3>
+                                <div class="drop-zone flex-grow" id="zone-me-do" onclick="placeM5Item('me-do')"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 flex-grow">
-                        <div class="bg-blue-50 rounded-2xl p-4 border-4 border-blue-200 flex flex-col">
-                            <h3 class="text-center font-black text-blue-700 mb-2">🤖 AI 幫忙做 (省時/整理)</h3>
-                            <div class="drop-zone flex-grow" id="zone-ai-do" onclick="placeM5Item('ai-do')"></div>
-                        </div>
-                        <div class="bg-orange-50 rounded-2xl p-4 border-4 border-orange-200 flex flex-col">
-                            <h3 class="text-center font-black text-orange-700 mb-2">🙋‍♂️ 我自己做 (情感/決策)</h3>
-                            <div class="drop-zone flex-grow" id="zone-me-do" onclick="placeM5Item('me-do')"></div>
-                        </div>
+                    <!-- Effort Section -->
+                    <div id="m5-effort" class="hidden animate-slide-in mt-6 bg-gradient-to-r from-orange-50 to-red-50 p-6 rounded-2xl border-4 border-orange-200">
+                        <h3 class="text-xl font-bold text-orange-800 mb-2">🧭 航海家反思</h3>
+                        <p class="text-gray-700 font-bold mb-4 text-lg">你看，人生中有很多重要的決定和情感連結是 AI 無法取代的。<br><span class="text-orange-600">你覺得如果人類「太依賴 AI」，會發生什麼事？</span></p>
+                        <textarea id="m5-input" class="effort-input mb-4" placeholder="例如：我覺得人類可能會失去思考能力..."></textarea>
+                        <button class="btn-macaron yellow w-full text-lg" onclick="submitM5Effort()">前進最終挑戰 🚀</button>
                     </div>
-                    
-                    <button class="btn-macaron mt-6 self-center hidden" id="m5-next" onclick="completeModule(5)">領取結業證書 🎓</button>
                 </div>
             `;
         }
 
-        const m5Data = [
-            { id: 't1', name: '檢查英文拼字錯誤', type: 'ai-do' },
-            { id: 't2', name: '寫日記抒發難過的心情', type: 'me-do' },
-            { id: 't3', name: '決定未來要讀什麼科系', type: 'me-do' },
-            { id: 't4', name: '把萬字長文整理成 3 個重點', type: 'ai-do' },
-            { id: 't5', name: '和好朋友吵架後的道歉', type: 'me-do' }
-        ];
-        let m5Correct = 0;
-        let m5Selected = null;
-
         function initModule5() {
             const container = document.getElementById('m5-items');
-            m5Correct = 0;
-            m5Selected = null;
-            m5Data.forEach(item => {
+            m5Correct = 0; m5Selected = null;
+            const shuffled = [...m5Data].sort(() => 0.5 - Math.random());
+            shuffled.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'item-chip bg-white';
-                div.id = item.id;
-                div.innerText = item.name;
+                div.className = 'item-chip bg-white'; div.id = item.id; div.innerText = item.name;
                 div.onclick = () => {
                     playSound('pop');
                     document.querySelectorAll('#m5-items .item-chip').forEach(e => e.classList.remove('selected'));
-                    div.classList.add('selected');
-                    m5Selected = item.id;
+                    div.classList.add('selected'); m5Selected = item.id;
                     document.querySelectorAll('.drop-zone').forEach(z => z.classList.add('active'));
                 };
                 container.appendChild(div);
@@ -874,75 +974,153 @@
             
             if (itemObj.type === targetZone) {
                 const el = document.getElementById(m5Selected);
-                el.classList.remove('selected');
-                el.onclick = null;
-                el.style.cursor = 'default';
+                el.classList.remove('selected'); el.onclick = null; el.style.cursor = 'default';
                 document.getElementById(`zone-${targetZone}`).appendChild(el);
                 
-                playSound('success');
-                m5Correct++;
-                
-                let msg = targetZone === 'ai-do' ? 
-                    "對！這種繁瑣的處理工作交給 AI 最適合！" : 
-                    "沒錯！牽涉到個人情感與重大決定的事，還是要自己來喔！";
-                speak(msg, 3000);
-
-                m5Selected = null;
-                document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
+                playSound('success'); m5Correct++;
+                let msg = targetZone === 'ai-do' ? "對！繁瑣處理交給 AI！" : "沒錯！牽涉情感與決策要自己來！";
+                speak(msg, 2000);
+                m5Selected = null; document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
 
                 if (m5Correct === m5Data.length) {
                     state.score += 20;
-                    document.getElementById('m5-next').classList.remove('hidden');
-                    speak("你完全掌握了與 AI 共存的智慧！", 4000);
+                    speak("你完全掌握了與 AI 共存的智慧！來做個總結吧！", 4000);
+                    document.getElementById('m5-task-area').classList.add('opacity-50', 'pointer-events-none');
+                    document.getElementById('m5-effort').classList.remove('hidden');
                 }
             } else {
                 showFeedback(false, "再想一下喔！這件事交給誰處理比較好？");
-                document.getElementById(m5Selected).classList.remove('selected');
-                m5Selected = null;
+                document.getElementById(m5Selected).classList.remove('selected'); m5Selected = null;
                 document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('active'));
             }
         }
 
+        function submitM5Effort() {
+            const val = document.getElementById('m5-input').value.trim();
+            if(val.length < 2) { speak("請寫下你的想法喔！"); return; }
+            state.reflections.m5 = val;
+            state.score += 15; saveState();
+            state.badges[4] = true; state.currentModule = 6; updateUI();
+        }
+
         // ==========================================
-        // MODULE 6: End Screen (Certificate)
+        // MODULE 6: Self-Learning Challenge (NEW)
         // ==========================================
-        function renderEnd() {
+        function renderModule6() {
+            speak("最後一關：自主學習挑戰！證明你已經是可以駕馭 AI 的大師了！");
             return `
-                <div class="glass-card p-10 text-center max-w-lg mx-auto animate-pop relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400"></div>
-                    <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-2 mt-4">
-                        結業證書
-                    </h1>
-                    <h2 class="text-xl font-bold text-gray-600 mb-8">AI 奇幻島 魔法學院</h2>
-                    
-                    <div class="bg-yellow-50 rounded-2xl p-6 border-4 border-yellow-200 mb-8 relative">
-                        <div class="text-6xl mb-4 animate-float">🎓</div>
-                        <p class="text-lg font-bold text-gray-700 mb-2">茲證明</p>
-                        <h3 class="text-3xl font-black text-blue-700 mb-4 border-b-2 border-blue-200 pb-2 inline-block px-8">${state.playerName}</h3>
-                        <p class="text-gray-700 font-bold mb-4">
-                            已成功通過五大試煉，掌握 AI 生活應用、精準提示詞魔法，並具備優良的 AI 數位素養！
-                        </p>
-                        <div class="text-2xl text-pink-500 font-black">
-                            最終積分: ${state.score} 
+                <div class="glass-card p-6 md:p-8 w-full animate-pop">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="text-3xl bg-teal-100 p-3 rounded-xl">🚀</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-teal-800">第六關：自主學習挑戰</h2>
+                            <p class="text-gray-600 font-bold">把學習帶入生活，完成這兩項任務！</p>
                         </div>
                     </div>
 
-                    <div class="flex justify-center gap-3 mb-8">
-                        <div class="badge unlocked" title="生活探索者">🔍</div>
-                        <div class="badge unlocked" title="超能解鎖大師">⚡</div>
-                        <div class="badge unlocked" title="咒語詠唱者">🧙‍♂️</div>
-                        <div class="badge unlocked" title="AI大法官">⚖️</div>
-                        <div class="badge unlocked" title="人生航海家">🧭</div>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl border-4 border-teal-100 shadow-sm">
+                            <h3 class="font-black text-teal-700 text-lg mb-2"><i class="fa-solid fa-gamepad mr-2"></i> 任務 1：行動派</h3>
+                            <p class="text-gray-700 font-bold mb-3">請寫下你<span class="text-teal-600">「今天或是最近一次」用 AI 做了什麼？</span>它幫了你什麼忙？</p>
+                            <textarea id="m6-t1" class="effort-input bg-teal-50" placeholder="例如：我昨天用 ChatGPT 幫我檢查英文句子的文法，讓我知道哪裡拼錯了..."></textarea>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border-4 border-cyan-100 shadow-sm">
+                            <h3 class="font-black text-cyan-700 text-lg mb-2"><i class="fa-solid fa-scale-balanced mr-2"></i> 任務 2：AI vs 我 (超關鍵🔥)</h3>
+                            <p class="text-gray-700 font-bold mb-3">仔細比較一下，列出 <br>1. <span class="text-red-500">一件 AI 做得比你好</span>的事。<br>2. <span class="text-blue-600">一件你比 AI 強</span>的事。</p>
+                            <textarea id="m6-t2" class="effort-input bg-cyan-50 h-32" placeholder="1. AI 比我強的是：找資料的速度\n2. 我比 AI 強的是：知道朋友為什麼難過"></textarea>
+                        </div>
+                        
+                        <button class="btn-macaron green w-full text-xl py-4 shadow-lg hover:scale-[1.02]" onclick="submitM6()">領取專屬結業證書 🎓</button>
                     </div>
-                    
-                    <button class="btn-macaron text-lg px-8" onclick="location.reload()">再玩一次 ↺</button>
+                </div>
+            `;
+        }
+
+        function submitM6() {
+            const t1 = document.getElementById('m6-t1').value.trim();
+            const t2 = document.getElementById('m6-t2').value.trim();
+            if(t1.length < 5 || t2.length < 5) { speak("這兩個任務很重要，請認真寫下你的觀察喔！"); return; }
+            
+            state.reflections.m6_t1 = t1;
+            state.reflections.m6_t2 = t2;
+            state.score += 30; saveState();
+            state.badges[5] = true;
+            state.currentModule = 7; updateUI();
+        }
+
+        // ==========================================
+        // MODULE 7: End Screen (Certificate + Record)
+        // ==========================================
+        function renderEnd() {
+            return `
+                <div class="w-full max-w-3xl mx-auto space-y-6 pb-10">
+                    <!-- Certificate -->
+                    <div class="glass-card p-10 text-center animate-pop relative overflow-hidden shadow-2xl">
+                        <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400"></div>
+                        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-2 mt-4">
+                            結業證書
+                        </h1>
+                        <h2 class="text-xl font-bold text-gray-600 mb-8">AI 奇幻島 魔法學院</h2>
+                        
+                        <div class="bg-yellow-50 rounded-2xl p-6 border-4 border-yellow-200 mb-8 relative">
+                            <div class="text-6xl mb-4 animate-float">🎓</div>
+                            <p class="text-lg font-bold text-gray-700 mb-2">茲證明</p>
+                            <h3 class="text-3xl font-black text-blue-700 mb-4 border-b-2 border-blue-200 pb-2 inline-block px-8">${state.playerName}</h3>
+                            <p class="text-gray-700 font-bold mb-4">
+                                已成功通過六大試煉，掌握 AI 應用、思辨能力，並完成自主學習挑戰，具備優良的 AI 數位素養！
+                            </p>
+                            <div class="text-2xl text-pink-500 font-black">
+                                最終總積分: ${state.score} 
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center gap-2 flex-wrap mb-6">
+                            <div class="badge unlocked" title="生活探索者">🔍</div>
+                            <div class="badge unlocked" title="超能解鎖大師">⚡</div>
+                            <div class="badge unlocked" title="咒語詠唱者">🧙‍♂️</div>
+                            <div class="badge unlocked" title="AI大法官">⚖️</div>
+                            <div class="badge unlocked" title="人生航海家">🧭</div>
+                            <div class="badge unlocked" title="自主學習王">🚀</div>
+                        </div>
+                    </div>
+
+                    <!-- Learning Record -->
+                    <div class="glass-card p-8 animate-slide-in shadow-xl" style="animation-delay: 0.5s; animation-fill-mode: both;">
+                        <h2 class="text-2xl font-black text-purple-800 mb-6 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-book-open text-purple-500"></i> 我的 AI 學習歷程檔案
+                        </h2>
+                        
+                        <div class="space-y-4 text-left">
+                            ${renderRecordItem('🔍 發現', 'AI 觀察習慣好不好？', state.reflections.m1)}
+                            ${renderRecordItem('⚡ 想像', '沒有 AI 的作業會怎樣？', state.reflections.m2)}
+                            ${renderRecordItem('🧙‍♂️ 創造', '我的夢想 AI 世界', state.reflections.m3)}
+                            ${renderRecordItem('⚖️ 辯論', `AI 應不應該幫忙寫作業？ (選擇：${state.reflections.m4_choice})`, state.reflections.m4_reason)}
+                            ${renderRecordItem('🧭 反思', '太依賴 AI 會發生什麼事？', state.reflections.m5)}
+                            ${renderRecordItem('🚀 行動', '我最近用 AI 做了什麼', state.reflections.m6_t1)}
+                            ${renderRecordItem('🏆 比較', 'AI vs 我', state.reflections.m6_t2)}
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <button class="btn-macaron text-lg px-8" onclick="location.reload()">再玩一次 / 重新開始 ↺</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRecordItem(icon, title, content) {
+            if (!content) return '';
+            return `
+                <div class="bg-white p-4 rounded-xl border-l-4 border-purple-400 shadow-sm">
+                    <h4 class="font-bold text-gray-500 text-sm mb-1">${icon} ${title}</h4>
+                    <p class="font-bold text-gray-800">${content.replace(/\n/g, '<br>')}</p>
                 </div>
             `;
         }
 
         function initEnd() {
-            playSound('success');
-            setTimeout(() => playSound('success'), 200);
+            playSound('success'); setTimeout(() => playSound('magic'), 300);
             document.getElementById('ai-companion').classList.add('hidden');
             document.getElementById('main-nav').classList.add('hidden');
             fireConfetti();
@@ -950,44 +1128,26 @@
 
         // --- Utility: Confetti ---
         function fireConfetti() {
-            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d'];
-            for(let i=0; i<100; i++) {
+            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d', '#8fd3f4'];
+            for(let i=0; i<120; i++) {
                 const conf = document.createElement('div');
-                conf.style.position = 'fixed';
-                conf.style.width = '10px';
-                conf.style.height = '10px';
+                conf.style.position = 'fixed'; conf.style.width = '12px'; conf.style.height = '12px';
                 conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                conf.style.top = '-10px';
-                conf.style.left = Math.random() * 100 + 'vw';
-                conf.style.opacity = Math.random() + 0.5;
-                conf.style.transform = `rotate(${Math.random() * 360}deg)`;
-                conf.style.zIndex = '100';
-                document.body.appendChild(conf);
+                conf.style.top = '-10px'; conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.opacity = Math.random() + 0.5; conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+                conf.style.zIndex = '100'; document.body.appendChild(conf);
 
-                const animationDuration = Math.random() * 3 + 2;
+                const duration = Math.random() * 3 + 2;
                 conf.animate([
                     { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
-                    { transform: `translate3d(${Math.random()*200 - 100}px, 100vh, 0) rotate(${Math.random()*720}deg)`, opacity: 0 }
-                ], {
-                    duration: animationDuration * 1000,
-                    easing: 'cubic-bezier(.37,0,.63,1)',
-                    fill: 'forwards'
-                });
-                setTimeout(() => conf.remove(), animationDuration * 1000);
+                    { transform: `translate3d(${Math.random()*300 - 150}px, 100vh, 0) rotate(${Math.random()*720}deg)`, opacity: 0 }
+                ], { duration: duration * 1000, easing: 'cubic-bezier(.37,0,.63,1)', fill: 'forwards' });
+                setTimeout(() => conf.remove(), duration * 1000);
             }
         }
 
-        // --- Navigation Controller ---
-        function completeModule(moduleId) {
-            state.badges[moduleId - 1] = true;
-            state.currentModule = moduleId + 1;
-            updateUI();
-        }
-
         // --- Init ---
-        window.onload = () => {
-            updateUI(); // Render initial login screen first
-        };
+        window.onload = () => { updateUI(); };
 
     </script>
 </body>
